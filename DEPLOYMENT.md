@@ -73,8 +73,10 @@ policy, SQLite writes/restart persistence, backup integrity and CA-bundle presen
 The first smoke attempt revealed that Docker reallocated its automatic host port
 after restart; the script now refreshes that mapping and the complete rerun passed.
 Go tests, vet, CGO-disabled static compilation, health-probe race checks and Compose
-configuration validation also passed. Actual final-server deployment, household
-migration and resource usage under a full household workload remain untested.
+configuration validation also passed. The owner subsequently confirmed LAN rendering on the PF1007L and successful
+timer installation with an already-current server check. Household migration, a
+subsequent scheduled code deployment and resource usage under a full household
+workload have not been independently verified.
 CA-bundle presence is checked; this smoke test does not assert live provider uptime.
 
 ## First start with an empty household

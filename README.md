@@ -151,7 +151,34 @@ The application's MIT license does not relicense recipe-provider content.
 
 For the eventual internal server, bind an appropriate private interface, e.g. `-addr 192.168.1.10:4173`. The frame's configured dashboard URL is http://192.168.1.10:4173/. Keep development on loopback until deployment. The server supplies the household clock, avoiding reliance on the frame's inaccurate system time.
 
-A pinned multi-stage [Dockerfile](Dockerfile), dashboard-only [Compose stack](compose.yaml), [.env.example](.env.example) and [deployment guide](DEPLOYMENT.md) are prepared. Production uses Debian 13 distroless with a static non-root Go executable, persistent SQLite volume and read-only root filesystem. Local development can continue with Go. The guide covers validation, preserving current data, and moving an image using `docker save`/`docker load` without a registry. For frequent server updates, run `bash scripts/update-server.sh` as the checkout owner: it fetches main, builds/tests, backs up SQLite, preserves the previous image/configuration and waits for container health. See the guide for recovery and the one-time auto-update bootstrap. Open clients check for a new application version each minute and reload after 60 seconds of inactivity, deferring while editing, reviewing ingredients or cooking. An optional host systemd timer checks GitHub main every 30 minutes; install it on the server with `sudo bash scripts/install-auto-update.sh --interval 30`. It keeps deployment access outside the web container and supports immediate checks over SSH.
+A pinned multi-stage [Dockerfile](Dockerfile), dashboard-only [Compose stack](compose.yaml), [.env.example](.env.example) and [deployment guide](DEPLOYMENT.md) are included. Production uses Debian 13 distroless with a static non-root Go executable, persistent SQLite volume and read-only root filesystem. Local development can continue with Go. The guide covers validation, preserving existing data and moving an image without a registry.
+
+## Automatic updates
+
+After the optional server timer and frame version detector are installed, the normal workflow is **develop → test → commit → push to GitHub `main`**. Routine updates require no server login or manual frame reload:
+
+1. The host systemd timer checks public GitHub `origin/main` about every **30 minutes after each run**. The interval is configurable; unchanged versions cause no rebuild or restart.
+2. When main advances, the updater builds and tests while the current dashboard stays running, takes and verifies a consistent SQLite backup, and preserves the previous image/configuration for recovery.
+3. It replaces only the Home HQ container and waits for health. The household data volume is preserved; Docker itself and other containers keep running.
+4. Open browsers and the frame check the application version every minute, then reload the current page after **60 seconds without interaction**. Open editors, unsaved forms, ingredient review and cooking defer the reload. Failed version checks keep the current screen; saved cooking progress survives a reload.
+
+Install once **on the Linux/systemd server**, from its configured checkout after these files are pushed:
+
+```sh
+git pull --ff-only
+sudo bash scripts/install-auto-update.sh --interval 30
+```
+
+The installer creates a private managed deployment checkout and copies the server's `.env` on first installation, using the existing Compose project and data volume. Deployment access stays on the host; the web container gets no Docker socket or update permissions. Clients running the old code need **one full reload** after the detector's first deployment; subsequent updates are automatic.
+
+For an immediate check or to inspect failures over SSH:
+
+```sh
+sudo systemctl start home-hq-update.service
+sudo journalctl -u home-hq-update.service -n 60 --no-pager
+```
+
+Build/backup failures preserve the running container. Startup failures are logged with recovery instructions and need investigation; household data is never automatically restored. See [the deployment guide](DEPLOYMENT.md#optional-automatic-updates-on-linux--omarchy) for changing the interval, managed environment settings, pause/resume, logs and recovery. Without the timer, run `bash scripts/update-server.sh` as the checkout owner for a manual update.
 
 ## Backup and move
 
@@ -171,7 +198,7 @@ go test ./...
 go vet ./...
 ```
 
-Cookbook tests cover draft ownership, metadata import, public-network URL guards, image bounds, editing conflicts, provider caching, duplicate saving, recipe filters, filtered picking, export and atomic/idempotent Shopping transfers. Tests also cover persistent completion, database backups, calendar modes and overlap handling, validation, CSRF and cross-origin rejection, HTML escaping, demo initialization, legacy-owner migration, person rename/archive, upload validation and completion-credit persistence, recurrence intervals/bounds/month ends/daylight saving, scheduled chores and event-location escaping, store assignment/rename/archive, shopping filters and scoped clearing, weather provider units/arrays/timestamps, ZIP matching, refresh throttling/backoff, cache restart/location isolation, stale/expired scenes, scene-preview accuracy, automatic appearance and overrides, legacy theme settings, CSS-only appearance refresh, weather settings validation, display-policy validation/persistence, clock payload and CSRF protection, pending summary totals, stable group links and chore-assignee filtering. Browser validation is also required for layout and interactions. The physical frame has not yet been tested with this server over the LAN. On 2026-10-13, the Today weather widget, translucent scenes and touch navigation rendered on the PF1007L over USB with Wi-Fi off. A short static-calendar sample was nearly idle and reported about 73 MiB kiosk PSS; this is a baseline snapshot, not evidence about animation or long-running performance.
+Cookbook tests cover draft ownership, metadata import, public-network URL guards, image bounds, editing conflicts, provider caching, duplicate saving, recipe filters, filtered picking, export and atomic/idempotent Shopping transfers. Tests also cover persistent completion, database backups, calendar modes and overlap handling, validation, CSRF and cross-origin rejection, HTML escaping, demo initialization, legacy-owner migration, person rename/archive, upload validation and completion-credit persistence, recurrence intervals/bounds/month ends/daylight saving, scheduled chores and event-location escaping, store assignment/rename/archive, shopping filters and scoped clearing, weather provider units/arrays/timestamps, ZIP matching, refresh throttling/backoff, cache restart/location isolation, stale/expired scenes, scene-preview accuracy, automatic appearance and overrides, legacy theme settings, CSS-only appearance refresh, weather settings validation, display-policy validation/persistence, clock payload and CSRF protection, pending summary totals, stable group links and chore-assignee filtering. Browser validation is also required for layout and interactions. On 2026-10-13, the owner confirmed the PF1007L displayed the deployed server over the LAN in the kitchen. Automatic client updates were verified in an isolated browser deployment, including deferred editing/cooking and preserved checklist progress; a subsequent automatic code deployment on the kitchen frame has not yet been observed. On 2026-10-13, the Today weather widget, translucent scenes and touch navigation rendered on the PF1007L over USB with Wi-Fi off. A short static-calendar sample was nearly idle and reported about 73 MiB kiosk PSS; this is a baseline snapshot, not evidence about animation or long-running performance.
 
 Cookbook was checked in a browser at 1280×800 and 390×844, with real URL import,
 manual paper-recipe entry, favorites, editing, archive/restore, filtered picking,
