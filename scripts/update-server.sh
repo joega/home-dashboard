@@ -11,6 +11,13 @@ main() {
     *) echo 'Unknown option. Use --help.' >&2; return 2 ;;
   esac
   if [ "$#" -gt 1 ]; then echo 'Use at most one option.' >&2; return 2; fi
+  # Once scheduled deployment is installed, use its single managed checkout and
+  # systemd job for manual triggers too; separate checkout locks would not overlap.
+  if [ "$mode" != --check ] && [ -f /etc/systemd/system/home-hq-update.service ] &&
+     [ "$PWD" != /var/lib/home-hq-updater/repo ]; then
+    echo 'Automatic deployment is installed. Run: sudo systemctl start home-hq-update.service' >&2
+    return 1
+  fi
   for tool in git docker python3 flock tar; do command -v "$tool" >/dev/null; done
   umask 077
   mkdir -p .deployment

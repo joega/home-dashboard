@@ -1,0 +1,12 @@
+[Unit]
+Description=Periodically check for Home HQ updates
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=@INTERVAL@min
+AccuracySec=30s
+RandomizedDelaySec=30s
+Unit=home-hq-update.service
+
+[Install]
+WantedBy=timers.target

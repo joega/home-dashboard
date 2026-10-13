@@ -222,11 +222,10 @@ Thereafter server updates apply automatically when the client is idle. A frame
 power cycle also loads the detector. Normal Cookbook/editor data refresh remains
 paused so it does not erase work.
 
-For these early iterations, run the command after each tested push. No background
-scheduler is installed. Later, a release branch/tags plus a logged timer can promote
-only selected versions. Updating source does not update pinned Go dependencies or
-base-image digests unless those pins are changed in a commit. Run the disposable
-container smoke check for packaging/dependency changes before deployment.
+Run the update command manually, or opt into the automatic timer below. Updating
+source does not update pinned Go dependencies or base-image digests unless those
+pins are changed in a commit. Run the disposable container smoke check for
+packaging/dependency changes before deployment.
 
 Script safety checks can be run without Docker access or a live server:
 
@@ -245,3 +244,81 @@ node scripts/test-idle-update.cjs
 ```
 
 Node is needed only to run these development tests, not to build or run Home HQ.
+
+## Optional automatic updates on Linux / Omarchy
+
+The server can check public GitHub `origin/main` automatically. A host systemd
+service runs the existing guarded update script, with a timer defaulting to about
+**30 minutes after each completed run**. It also checks five minutes after boot;
+on an already-booted machine the first check may run immediately after installing.
+A failed run is logged and the timer checks again later. Successful no-op checks do
+not rebuild or recreate the container. Only Home HQ's dashboard container is
+replaced for an update; the Docker daemon and other containers are not restarted.
+
+Install **on the deployment server**, from its checkout after pushing these files
+to GitHub and pulling them there:
+
+```sh
+git pull --ff-only
+sudo bash scripts/install-auto-update.sh --interval 30
+```
+
+Use `--interval 15` or `--interval 60` instead if preferred; rerun the installer to
+change it. The installer checks that the existing `home-hq` dashboard is healthy,
+clones the same public HTTPS origin on `main` into a private root-owned managed
+checkout at `/var/lib/home-hq-updater/repo`, copies the server's `.env` on first
+installation, validates and installs the unit files, and enables the timer. It
+requires the existing Docker daemon plus Bash, Git, Python 3, tar, util-linux and
+systemd. Those are normally available on the Omarchy server. SSH/private-repository
+credentials are not configured by this installer. The timer is prepared in this
+repository; it is **not** enabled until you run the installer on the server.
+
+The managed checkout uses the same Compose project name and household volume.
+Your original checkout is preserved and receives no root-owned Git files. After
+installation, make production environment changes in the managed `.env` using
+`sudoedit /var/lib/home-hq-updater/repo/.env`. Later installer runs preserve it.
+The dashboard still has a read-only root filesystem, runs as non-root and has no
+Docker socket, updater endpoint or host deployment permissions. The host service
+has Docker deployment access; it trusts code pushed to the configured `main`.
+No Docker group membership, socket permission changes or passwordless sudo rule
+is added. The installed wrapper/units change only when the installer is rerun;
+application code and the update script advance with GitHub.
+
+Trigger a check/update immediately, view the next check and inspect results:
+
+```sh
+sudo systemctl start home-hq-update.service
+systemctl list-timers home-hq-update.timer
+sudo journalctl -u home-hq-update.service -n 60 --no-pager
+```
+
+An inactive oneshot service after a successful run is normal; look for the final
+PASS/no-change line or the error in its journal. Systemd serializes these manual
+and scheduled runs, and the script also locks its checkout. Once installed, use
+`systemctl start` for manual updates; the original checkout's update command
+directs you to it rather than racing a different checkout. Recovery files live
+under `/var/lib/home-hq-updater/repo/backups/` and require sudo to read.
+
+Pause before deliberate rollback or maintenance:
+
+```sh
+sudo systemctl disable --now home-hq-update.timer
+# Resume later:
+sudo systemctl enable --now home-hq-update.timer
+```
+
+Pausing the timer does not stop Home HQ or interrupt an already-running update.
+The updater does not automatically restore data after a failed startup; use the
+logged recovery path and compatibility guidance above. Logs/failures can be
+inspected over SSH. This setup does not create an external notification channel.
+To remove scheduling, disable the timer; retain the managed checkout/backups until
+you no longer need recovery. Neither disabling the timer nor the installer removes
+household data.
+
+To review generated units without touching services:
+
+```sh
+bash scripts/install-auto-update.sh --prepare /tmp/home-hq-units --interval 30
+systemd-analyze verify /tmp/home-hq-units/home-hq-update.service /tmp/home-hq-units/home-hq-update.timer
+python3 scripts/test-auto-update.py
+```

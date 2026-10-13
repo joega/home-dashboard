@@ -1,0 +1,23 @@
+[Unit]
+Description=Check GitHub main and update Home HQ
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/usr/bin/bash /usr/local/libexec/home-hq-auto-update
+TimeoutStartSec=20min
+Environment=GIT_TERMINAL_PROMPT=0
+Environment=GIT_CONFIG_GLOBAL=/dev/null
+Environment=DOCKER_CONFIG=/var/lib/home-hq-updater/docker
+Environment=COMPOSE_PROJECT_NAME=home-hq
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/home-hq-updater
+StandardOutput=journal
+StandardError=journal
