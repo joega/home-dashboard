@@ -51,7 +51,7 @@ and fixes should be committed as coherent, tested changes when they are ready.
 
 ## Remaining direction
 
-Music / Echo controls are deferred until Home Assistant is installed on the eventual server. Start with verified device controls, keep credentials in the Go backend and retain the frame network restriction; Music Assistant streaming is a separate later decision. Sports will reuse provider behavior from Sportray through Go adapters. Recipe
+Home-device integration is deferred until Home Assistant is installed on the eventual server. The owner revised the Music-controls plan to status-only views so children cannot change device settings. Keep credentials in the Go backend, expose no device-command routes and retain the frame network restriction. Verify upstream read-only permissions separately; Nest sensor access currently also grants thermostat control. Echo cooking announcements require a separate explicit opt-in; playback, volume controls and Music Assistant streaming remain deferred. Sports will reuse provider behavior from Sportray through Go adapters. Recipe
 wheel animation, serving scaling, richer calendar locations/integrations, weather
 animation and final container packaging are future work. The small screen and
 restricted frame network remain design constraints: provider requests happen on
