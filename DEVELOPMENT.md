@@ -51,7 +51,7 @@ and fixes should be committed as coherent, tested changes when they are ready.
 
 ## Remaining direction
 
-Sports will reuse provider behavior from Sportray through Go adapters. Recipe
+Music / Echo controls are deferred until Home Assistant is installed on the eventual server. Start with verified device controls, keep credentials in the Go backend and retain the frame network restriction; Music Assistant streaming is a separate later decision. Sports will reuse provider behavior from Sportray through Go adapters. Recipe
 wheel animation, serving scaling, richer calendar locations/integrations, weather
 animation and final container packaging are future work. The small screen and
 restricted frame network remain design constraints: provider requests happen on

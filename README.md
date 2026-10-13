@@ -50,6 +50,37 @@ The static background, Today widget, home ZIP/units settings and persistent fore
 
 The first complete Cookbook is implemented. The random dinner picker precedes a possible wheel animation. Serving scaling, automatic ingredient merging, OCR of handwritten recipes and additional formats such as Cooklang remain future work. Saved recipes are local and survive provider outages; browser checklists are device-specific and reset when recipe content changes. TheMealDB recipes do not always supply timings or servings, so those fields are labeled missing rather than inferred from the title.
 
+### Music / Echo controls (planned; waiting for Home Assistant)
+
+Deferred until Home Assistant is installed and running on the eventual dashboard
+server, potentially as a separate Docker service. Inspired by the Music view in
+[Kitchen Frame](https://github.com/huntsyea/kitchen-frame/blob/main/dashboard/src/views/Music.svelte)
+and its [Home Assistant setup](https://github.com/huntsyea/kitchen-frame/blob/main/docs/frame.md#music-home-assistant--music-assistant).
+First pair the household Echo devices and verify the capabilities exposed by
+[Alexa Devices](https://www.home-assistant.io/integrations/alexa_devices/).
+Then add a top-level Music view with room/device selection, now-playing metadata
+and artwork, supported playback controls and volume. Unsupported controls must be
+hidden or disabled; device and music-service support needs testing.
+
+The Go backend will hold the Home Assistant token, expose only allowlisted players
+and actions, and proxy artwork to the dashboard origin. Credentials stay outside
+Git and browser storage. The frame can retain its single dashboard IP/port policy;
+Home Assistant and any Amazon/cloud connection run on the server side. Authentication
+and authorization for dashboard music commands need review before enabling them
+beyond trusted household access.
+
+Music Assistant may later add library browsing and queue transfer. Its current
+[Alexa player provider](https://www.music-assistant.io/player-support/alexa/) is
+experimental and requires a separate skill service, Amazon developer setup and
+public HTTPS endpoints; verify whether it is needed before expanding the initial
+remote controls into arbitrary audio streaming. Announcements and cooking timer
+sounds are possible later additions, with quiet-hours controls.
+
+A read-only PF1007L check on October 13, 2026 found an `audiocodec` ALSA device and
+Android speaker routes, including the media stream. This establishes exposed audio
+support, but an audible test of the physical speaker has not yet been performed.
+Local frame sound is separate from controlling music playing on an Echo.
+
 ### Sports (planned)
 
 Favorite-team settings and a Sports view for upcoming, live and recent games, with scores and start times. Adapt the provider normalization, team identities, freshness rules, bounded caches and adaptive polling from the separate `../sportray` project. Its providers and models are JavaScript/QML, so reuse the behavior and fixtures in Go server adapters; do not require Omarchy or the desktop plugin to run. All provider data and any team logos must reach the frame through this dashboard's origin. Recheck provider behavior when implementing.
