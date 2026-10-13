@@ -1,0 +1,17 @@
+/data/
+/.cache/
+/bin/
+/.qa/
+*.tar
+/backups/
+*.sqlite
+*.sqlite-*
+
+# Local credentials and private assets
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.pem
+*.key
