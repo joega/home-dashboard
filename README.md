@@ -76,10 +76,14 @@ public HTTPS endpoints; verify whether it is needed before expanding the initial
 remote controls into arbitrary audio streaming. Announcements and cooking timer
 sounds are possible later additions, with quiet-hours controls.
 
-A read-only PF1007L check on October 13, 2026 found an `audiocodec` ALSA device and
-Android speaker routes, including the media stream. This establishes exposed audio
-support, but an audible test of the physical speaker has not yet been performed.
-Local frame sound is separate from controlling music playing on an Echo.
+A PF1007L check on October 13, 2026 found an `audiocodec` ALSA device and Android
+speaker routes. A temporary native tone test completed 0.6-second and one-second
+PCM playback at media levels 1/8 and 2/8, with further amplitude attenuation. The
+first was inaudible; the owner possibly heard the second very faintly. AudioTrack
+consumed all samples, but usable physical speaker loudness is not yet conclusively
+verified. Media volume was restored to its previous value and the temporary payload
+removed; no kiosk change was needed. Timer sounds remain conditional on a clearer
+speaker check. Local frame sound is separate from controlling music on an Echo.
 
 ### Sports (planned)
 
