@@ -19,8 +19,8 @@
 <meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false,"selfRequestsOnly":true}'>
 <title>Home HQ · {{.Title}}</title>
 <link rel="stylesheet" href="/static/app.css?v={{.AssetVersion}}">
-<script src="/static/vendor/htmx.min.js" defer></script><script src="/static/app.js?v={{.AssetVersion}}" defer></script>
-</head><body data-weather="{{.Weather.Scene}}" data-theme="{{.Weather.Theme}}">
+<script src="/static/vendor/htmx.min.js" defer></script><script src="/static/app.js?v={{.AssetVersion}}" defer></script><script src="/static/update.js?v={{.AssetVersion}}" defer></script>
+</head><body data-app-version="{{.AssetVersion}}" data-weather="{{.Weather.Scene}}" data-theme="{{.Weather.Theme}}">
 <div class="weather-sky" aria-hidden="true"><span class="sky-sun"></span><span class="sky-cloud sky-cloud-one"></span><span class="sky-cloud sky-cloud-two"></span><span class="sky-cloud sky-cloud-three"></span></div>
 {{template "icons"}}
 <div class="app">{{template "nav" .}}<main id="content" class="content" tabindex="-1">{{template "content" .}}</main></div>

@@ -3,7 +3,6 @@ package dashboard
 import (
 	"bytes"
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/hex"
 	"errors"
@@ -123,10 +122,11 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 		return nil, err
 	}
 	assets, _ := fs.Sub(web.Files, "static")
-	css, _ := web.Files.ReadFile("static/app.css")
-	js, _ := web.Files.ReadFile("static/app.js")
-	digest := sha256.Sum256(append(css, js...))
-	a := &App{store: store, loc: loc, templates: templates, version: hex.EncodeToString(digest[:6])}
+	version, err := applicationVersion(web.Files, buildRevision)
+	if err != nil {
+		return nil, err
+	}
+	a := &App{store: store, loc: loc, templates: templates, version: version}
 	var provider weather.Provider = weather.NewClient()
 	if len(providers) > 0 {
 		provider = providers[0]
@@ -143,6 +143,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 		w.Header().Set("Content-Type", "text/plain")
 		fmt.Fprintln(w, "ok")
 	})
+	mux.HandleFunc("GET /version", a.applicationVersion)
 	mux.HandleFunc("GET /clock", a.clock)
 	mux.HandleFunc("GET /appearance", a.appearance)
 	mux.HandleFunc("GET /frame/display-policy", a.displayPolicy)

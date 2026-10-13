@@ -125,7 +125,7 @@ BACKUP
   [ "$actual" = "$target" ] || { echo 'Running image revision mismatch.' >&2; return 1; }
   echo "PASS: running $target. Household volume preserved."
   echo "Backup and previous deployment: $recovery"
-  echo 'Reload open browsers and use frame controls → Reload dashboard to load new assets.'
+  echo 'Open clients update automatically when idle; older clients need one full reload to install the detector.'
 }
 # Parse the whole function before Git changes this script during an update.
 main "$@"

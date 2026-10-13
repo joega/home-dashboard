@@ -201,10 +201,26 @@ stop and plan a restore of the saved SQLite snapshot separately; this can lose
 changes made since the snapshot. Following an image rollback, run the update
 script with `--force` when ready to redeploy the current source.
 
-Page data refreshes automatically on the normal 30-second cycle. New JavaScript
-and CSS require a full page reload: reload your browser and use the frame's
-**⋮ → Reload dashboard** after deployment. Cookbook/editor views intentionally
-pause data refresh. No Android/kiosk update or frame reflashing is involved.
+Page data refreshes automatically on the normal 30-second cycle. Open clients also
+check the server's application version once a minute. An update reloads the current
+URL after at least 60 seconds without touch/keyboard/wheel activity. Open editors,
+settings/import forms, unsaved form changes, Shopping ingredient review, cooking
+mode, focused text/select inputs and active HTMX requests defer the reload. Browsing the
+Cookbook normally can update; cooking waits until you leave that mode. Pending
+updates are rechecked against the server before reloading; deployment downtime,
+failed/malformed responses and rollbacks do not force a reload of the current
+screen. Hidden browser tabs resume checks with a new idle period when shown.
+
+The version fingerprints all embedded templates/assets and the production Git
+revision supplied by this script, so backend-only production updates also count.
+Reloading keeps the current URL and local cooking checklist storage. No Android
+permission, kiosk update, firewall change or frame reflashing is involved.
+
+**One-time bootstrap:** clients running the older code need one full reload after
+the first deployment that adds this detector (frame **⋮ → Reload dashboard**).
+Thereafter server updates apply automatically when the client is idle. A frame
+power cycle also loads the detector. Normal Cookbook/editor data refresh remains
+paused so it does not erase work.
 
 For these early iterations, run the command after each tested push. No background
 scheduler is installed. Later, a release branch/tags plus a logged timer can promote
@@ -221,3 +237,11 @@ python3 scripts/test-update-server.py
 These use disposable Git repositories and a simulated Docker CLI to check update
 ordering, backup integrity, no-op updates and failure handling. They do not replace
 an actual deployment health check.
+
+The idle-update policy also has dependency-free JavaScript tests:
+
+```sh
+node scripts/test-idle-update.cjs
+```
+
+Node is needed only to run these development tests, not to build or run Home HQ.

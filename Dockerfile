@@ -9,10 +9,11 @@ COPY internal ./internal
 COPY web ./web
 # Tests run on the build host; the executable is built for the requested target.
 RUN CGO_ENABLED=0 go test ./... && go vet ./...
+ARG HOME_HQ_REVISION=unknown
 ARG TARGETOS
 ARG TARGETARCH
 RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} \
-    go build -trimpath -ldflags="-s -w" -o /out/home-dashboard ./cmd/home-dashboard
+    go build -trimpath -ldflags="-s -w -X home-dashboard/internal/dashboard.buildRevision=${HOME_HQ_REVISION}" -o /out/home-dashboard ./cmd/home-dashboard
 RUN install -d -m 0750 -o 65532 -g 65532 /out/data && \
     touch /out/data/.keep && chown 65532:65532 /out/data/.keep
 
