@@ -10,8 +10,7 @@ intermediate versions that were never saved in Git.
 The original inspiration was [Wes Bos’s photo-frame-dashboard](https://github.com/wesbos/photo-frame-dashboard/).
 That project handles frame-specific access, boot patches and the Android kiosk.
 Home HQ is a separate application: Go, embedded HTML/HTMX assets and SQLite.
-It can be developed with a normal browser and Go server. Container packaging is
-left until deployment; moving a Docker image will not require a registry.
+It can be developed with a normal browser and Go server. Container packaging was prepared after the initial feature pass; a local Go server remains the development workflow. Moving a Docker image will not require a registry.
 
 The PF1007L work used a microSD-triggered FEL entry, RAM-loaded U-Boot and a verified
 original eMMC backup before enabling USB ADB. The stock Android kernel remains;
@@ -53,7 +52,7 @@ and fixes should be committed as coherent, tested changes when they are ready.
 
 Home-device integration is deferred until Home Assistant is installed on the eventual server. The owner revised the Music-controls plan to status-only views so children cannot change device settings. Keep credentials in the Go backend, expose no device-command routes and retain the frame network restriction. Verify upstream read-only permissions separately; Nest sensor access currently also grants thermostat control. Echo cooking announcements require a separate explicit opt-in; playback, volume controls and Music Assistant streaming remain deferred. Sports will reuse provider behavior from Sportray through Go adapters. Recipe
 wheel animation, serving scaling, richer calendar locations/integrations, weather
-animation and final container packaging are future work. The small screen and
+animation and final container deployment are future work. Dockerfile/Compose now prepare a pinned Debian 13 distroless runtime, with separate household storage and explicit local validation. The small screen and
 restricted frame network remain design constraints: provider requests happen on
 the server, while assets and data reach the kiosk from one dashboard origin.
 

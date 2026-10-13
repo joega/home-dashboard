@@ -26,8 +26,15 @@ func main() {
 	dbpath := flag.String("db", env("DASHBOARD_DB", "data/dashboard.sqlite"), "SQLite file")
 	tz := flag.String("timezone", env("DASHBOARD_TIMEZONE", "America/New_York"), "Household time zone")
 	demo := flag.Bool("demo", false, "Seed example data in a new database")
+	health := flag.Bool("healthcheck", false, "Check the running local server and exit without opening SQLite")
 	backup := flag.String("backup", "", "Write a consistent SQLite backup and exit")
 	flag.Parse()
+	if *health {
+		if err := checkHealth(*addr); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	loc, err := time.LoadLocation(*tz)
 	if err != nil {
 		log.Fatal(err)

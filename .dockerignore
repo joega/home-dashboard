@@ -1,0 +1,23 @@
+# Allow only source/build metadata into the Docker build context.
+*
+!Dockerfile
+!.dockerignore
+!go.mod
+!go.sum
+!cmd/
+!cmd/**
+!internal/
+!internal/**
+!web/
+!web/**
+!LICENSE
+!THIRD_PARTY_NOTICES.md
+# Defense in depth if private files ever appear inside a source directory.
+**/.env
+**/.env.*
+**/*.sqlite
+**/*.sqlite-*
+**/*.keystore
+**/*.jks
+**/*.pem
+**/*.key

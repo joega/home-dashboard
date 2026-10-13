@@ -1,0 +1,37 @@
+name: home-hq
+services:
+  dashboard:
+    image: ${HOME_HQ_IMAGE:-home-hq:local}
+    build:
+      context: .
+    # Loopback is the safe default; choose the server's LAN IP at deployment.
+    ports:
+      - "${DASHBOARD_BIND_IP:-127.0.0.1}:${DASHBOARD_PORT:-4173}:4173"
+    environment:
+      DASHBOARD_ADDR: "0.0.0.0:4173"
+      DASHBOARD_DB: "/data/dashboard.sqlite"
+      DASHBOARD_TIMEZONE: ${DASHBOARD_TIMEZONE:-America/New_York}
+      MEALDB_API_KEY: ${MEALDB_API_KEY:-1}
+      GOMEMLIMIT: "384MiB"
+    user: "65532:65532"
+    volumes:
+      - household-data:/data
+    read_only: true
+    tmpfs:
+      - "/tmp:rw,noexec,nosuid,size=32m,mode=1777"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+volumes:
+  household-data:
