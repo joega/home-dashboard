@@ -20,6 +20,8 @@ FROM gcr.io/distroless/static-debian13:nonroot@sha256:e2e927ec666bae08560abb3c55
 COPY --from=build /out/home-dashboard /usr/local/bin/home-dashboard
 COPY --from=build --chown=65532:65532 /out/data /data
 COPY LICENSE THIRD_PARTY_NOTICES.md /usr/share/licenses/home-hq/
+ARG HOME_HQ_REVISION=unknown
+LABEL org.opencontainers.image.revision=$HOME_HQ_REVISION
 USER 65532:65532
 WORKDIR /data
 ENV DASHBOARD_ADDR=0.0.0.0:4173 \

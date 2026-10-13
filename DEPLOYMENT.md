@@ -157,6 +157,67 @@ Keep copies off the server as well. Check snapshot integrity and restore into a
 separate test volume before depending on backups. Snapshots contain household
 information and photos; handle them as private files.
 
-For updates, back up first, review source/dependency/base-pin changes, rebuild and
-rerun the disposable smoke check, then replace the production image deliberately.
-Existing data stays in the named volume. There is no automatic image updater.
+## Frequent development updates
+
+Use a dedicated server checkout on `main`. Develop and test on your laptop, commit
+and push to GitHub, then run this **as the checkout owner** on the server:
+
+```sh
+bash scripts/update-server.sh
+```
+
+The script requests sudo only for Docker if needed; do not run the whole script
+with sudo. For the first update that introduces the script, bootstrap with
+`git pull --ff-only` first. It requires Bash, Git, Docker Compose with `--wait`,
+Python 3, tar and `flock` (util-linux on Linux).
+
+It fetches `origin/main`, refuses dirty/ahead/diverged checkouts, and permits only
+a fast-forward. The current container stays running during the build, whose
+Dockerfile runs Go tests and vet. Immediately before replacement it creates a
+consistent SQLite snapshot, copies it to `backups/update-…/household.sqlite`, and
+checks integrity. The household named volume must remain the same. Compose
+recreates the service and waits up to 90 seconds for health. There is brief downtime
+during replacement; do not make household edits in that window.
+
+The image carries its Git revision. Later runs skip rebuilding/restarting when
+that revision is already running and healthy. `--check` fetches and reports source
+changes without deploying; `--force` rebuilds/redeploys even at the same revision.
+A failed build or backup leaves the previous container running. A failed startup
+prints focused logs and the previous-image/config command; it does not blindly
+restore a database that might have newer household edits or schema changes.
+
+Each attempt keeps the old image under `home-hq:before-…`, the resolved previous
+Compose configuration, and revision records in its private backup directory. The
+resolved configurations may contain credentials: do not share or commit them.
+Snapshots also remain in the Docker volume as `before-update-….sqlite`. Retain
+several known-good updates and an off-server copy; periodically remove older
+snapshots/recovery folders/image tags deliberately. No automatic pruning is done.
+Do not use `docker compose down --volumes` or volume pruning for updates.
+
+To recover, review the printed command or use the saved `rollback.compose.json`
+with the same Compose project name. It pins the old image and configuration but
+uses the **current** household database. If a future migration is incompatible,
+stop and plan a restore of the saved SQLite snapshot separately; this can lose
+changes made since the snapshot. Following an image rollback, run the update
+script with `--force` when ready to redeploy the current source.
+
+Page data refreshes automatically on the normal 30-second cycle. New JavaScript
+and CSS require a full page reload: reload your browser and use the frame's
+**⋮ → Reload dashboard** after deployment. Cookbook/editor views intentionally
+pause data refresh. No Android/kiosk update or frame reflashing is involved.
+
+For these early iterations, run the command after each tested push. No background
+scheduler is installed. Later, a release branch/tags plus a logged timer can promote
+only selected versions. Updating source does not update pinned Go dependencies or
+base-image digests unless those pins are changed in a commit. Run the disposable
+container smoke check for packaging/dependency changes before deployment.
+
+Script safety checks can be run without Docker access or a live server:
+
+```sh
+python3 scripts/test-update-server.py
+```
+
+These use disposable Git repositories and a simulated Docker CLI to check update
+ordering, backup integrity, no-op updates and failure handling. They do not replace
+an actual deployment health check.

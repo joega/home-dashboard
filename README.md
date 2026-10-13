@@ -151,7 +151,7 @@ The application's MIT license does not relicense recipe-provider content.
 
 For the eventual internal server, bind an appropriate private interface, e.g. `-addr 192.168.1.10:4173`. The frame's configured dashboard URL is http://192.168.1.10:4173/. Keep development on loopback until deployment. The server supplies the household clock, avoiding reliance on the frame's inaccurate system time.
 
-A pinned multi-stage [Dockerfile](Dockerfile), dashboard-only [Compose stack](compose.yaml), [.env.example](.env.example) and [deployment guide](DEPLOYMENT.md) are prepared. Production uses Debian 13 distroless with a static non-root Go executable, persistent SQLite volume and read-only root filesystem. Local development can continue with Go. The guide covers validation, preserving current data, and moving an image using `docker save`/`docker load` without a registry.
+A pinned multi-stage [Dockerfile](Dockerfile), dashboard-only [Compose stack](compose.yaml), [.env.example](.env.example) and [deployment guide](DEPLOYMENT.md) are prepared. Production uses Debian 13 distroless with a static non-root Go executable, persistent SQLite volume and read-only root filesystem. Local development can continue with Go. The guide covers validation, preserving current data, and moving an image using `docker save`/`docker load` without a registry. For frequent server updates, run `bash scripts/update-server.sh` as the checkout owner: it fetches main, builds/tests, backs up SQLite, preserves the previous image/configuration and waits for container health. See the guide for recovery and reloading frame assets.
 
 ## Backup and move
 
