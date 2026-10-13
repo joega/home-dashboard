@@ -2,6 +2,18 @@
 
 A local household dashboard for the AiMOR wall frame, built with Go, HTML templates, HTMX and SQLite. A compact left-aligned top menu sits inside one translucent surface, with a 12 px outer gap on the frame (8 px on phones) to expose the weather sky. The frame hardware work stays in the separate photo-frame-dashboard project.
 
+Inspired by [Wes Bos’s photo-frame-dashboard](https://github.com/wesbos/photo-frame-dashboard/),
+with navigation and Cookbook workflow adaptations from
+[Kitchen Frame](https://github.com/huntsyea/kitchen-frame). Provider requests run on
+the server; the frame receives assets and data from one dashboard origin.
+
+Frame access, boot patches and kiosk setup belong in the hardware project. This
+web server does not replace a frame’s Android kernel or establish trusted firmware.
+On the PF1007L setup used here, the stock kernel remains and network access is
+restricted to the dashboard endpoint. Keep per-device backups, identifiers and
+signing keys outside public source control. Household databases, uploaded photos,
+caches, credentials and generated binaries are also ignored by this repository.
+
 ## Develop
 
 Requires Go 1.26 or newer. No Node.js or Docker is needed.
@@ -170,7 +182,6 @@ cooking stayed at 55% beyond the one-minute idle threshold, and exiting resumed
 LAN deployment have not been tested. Import sites vary, and long ingredient/step
 lists scroll inside their working panes.
 
-MIT licensed. See [LICENSE](LICENSE), [development path](DEVELOPMENT.md) and
-[third-party notices](THIRD_PARTY_NOTICES.md).
+MIT licensed. See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 Vendored HTMX and fonts include their upstream licenses in `web/static/vendor/`. Design references are in `design/`; the top-navigation and inset-shell direction in `design/DESIGN.md` supersedes the earlier sidebar concepts.
