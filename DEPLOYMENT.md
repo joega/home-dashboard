@@ -5,6 +5,11 @@ scenes, with pure-Go SQLite. No Node runtime, separate database service, systemd
 package updates inside the running container are needed. Home Assistant is a
 separate future project and is not included in this Compose stack.
 
+Examples below use sample LAN address `192.168.50.10`, dashboard port `4173`
+and SSH username `your-user`. Substitute your server's fixed LAN address,
+configured port and SSH username. Loopback addresses (`127.0.0.1`) refer to the
+machine running the command or browser and should stay as shown.
+
 ## Base image choice
 
 | Runtime | Fit for this app |
@@ -102,7 +107,7 @@ docker save home-hq:local -o home-hq-image.tar
 # Transfer home-hq-image.tar plus compose.yaml and .env.example to the server.
 docker load -i home-hq-image.tar
 cp .env.example .env
-# Set DASHBOARD_BIND_IP=192.168.1.10 on that host.
+# Set DASHBOARD_BIND_IP=192.168.50.10 on that host.
 ```
 
 Run `docker compose up -d --no-build --pull never` on the destination after data
@@ -344,7 +349,7 @@ and the resolved Compose policy were checked on the development laptop.
 After this version is deployed, set these in the active checkout's `.env`:
 
 ```dotenv
-DASHBOARD_BIND_IP=192.168.1.10
+DASHBOARD_BIND_IP=192.168.50.10
 DASHBOARD_PORT=4173
 COMPOSE_FILE=compose.yaml:compose.media-host.yaml
 ```
@@ -378,8 +383,9 @@ are needed for Spotify. The Go server makes ordinary outbound HTTPS requests usi
 the existing CA bundle. Its account tokens persist in the household SQLite volume,
 so normal automatic updates preserve the connection.
 
-Spotify does not accept a plain-HTTP LAN callback. Keep the deployed dashboard at
-`192.168.1.10:4173`; use a temporary laptop loopback tunnel only for account login.
+Spotify does not accept a plain-HTTP LAN callback. Keep the deployed dashboard on
+its private LAN address (for example, `192.168.50.10:4173`); use a temporary laptop
+loopback tunnel only for account login.
 After deploying the Spotify connector, register this URI in your Spotify developer
 app and use it as the callback in the server's Settings → Media:
 
@@ -388,11 +394,11 @@ http://127.0.0.1:4184/media/spotify/callback
 ```
 
 On the laptop, keep this SSH command running during login. Replace
-`your-user` with your server SSH username and `192.168.1.10` with your dashboard
+`your-user` with your server SSH username and `192.168.50.10` with your dashboard
 server's LAN address (port `4173` is the dashboard's configured port):
 
 ```sh
-ssh -N -L 127.0.0.1:4184:192.168.1.10:4173 your-user@192.168.1.10
+ssh -N -L 127.0.0.1:4184:192.168.50.10:4173 your-user@192.168.50.10
 ```
 
 Open `http://127.0.0.1:4184/settings?section=media` in your browser, save your public

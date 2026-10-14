@@ -390,7 +390,7 @@ The application's MIT license does not relicense recipe-provider content.
 | `-db` | `DASHBOARD_DB` | `data/dashboard.sqlite` |
 | `-timezone` | `DASHBOARD_TIMEZONE` | `America/New_York` |
 
-For the eventual internal server, bind an appropriate private interface, e.g. `-addr 192.168.1.10:4173`. The frame's configured dashboard URL is http://192.168.1.10:4173/. Keep development on loopback until deployment. The server supplies the household clock, avoiding reliance on the frame's inaccurate system time.
+For a LAN deployment, bind the server's private interface, for example `-addr 192.168.50.10:4173`, and configure the frame to load `http://192.168.50.10:4173/`. This is a sample address; replace it with your server's fixed LAN IP. Keep development on loopback until deployment. The server supplies the household clock, avoiding reliance on the frame's inaccurate system time.
 
 A pinned multi-stage [Dockerfile](Dockerfile), dashboard-only [Compose stack](compose.yaml), [.env.example](.env.example) and [deployment guide](DEPLOYMENT.md) are included. Production uses Debian 13 distroless with a static non-root Go executable, persistent SQLite volume and read-only root filesystem. Local development can continue with Go. The guide covers validation, preserving existing data and moving an image without a registry.
 
