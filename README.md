@@ -194,7 +194,7 @@ connected account's music controls.
 
 1. Create a Web API app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
 2. Register the exact callback URL. For the laptop preview use
-   `http://127.0.0.1:4182/media/spotify/callback`; for Mighty via SSH use
+   `http://127.0.0.1:4182/media/spotify/callback`; for a remote dashboard server via SSH use
    `http://127.0.0.1:4184/media/spotify/callback`.
 3. Save the Client ID and callback in Settings → Media. Open the dashboard at that
    callback's loopback origin before selecting Connect Spotify. Complete Spotify's

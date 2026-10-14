@@ -51,7 +51,7 @@ func (a *App) connectSpotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !cfg.MatchesHost(r.Host) {
-		http.Error(w, "Open "+cfg.Origin()+"/settings?section=media to connect Spotify. On Mighty, use the documented temporary SSH tunnel.", 400)
+		http.Error(w, "Open "+cfg.Origin()+"/settings?section=media to connect Spotify. For a remote dashboard server, use the documented temporary SSH tunnel.", 400)
 		return
 	}
 	state, browser, verifier := spotify.Random(), spotify.Random(), spotify.Random()

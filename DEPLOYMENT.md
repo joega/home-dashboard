@@ -338,8 +338,8 @@ included. It shares the host network namespace, which broadens the container's
 network access (including host loopback). It retains the non-root user, read-only
 root, capability drop, resource limits and existing household volume; no Docker
 socket is mounted. Bind the HTTP server to the intended LAN IP, not every interface.
-This profile has not been live-tested on Mighty; the local Go discovery and the
-resolved Compose policy were checked on the laptop.
+This profile has not been live-tested on the production server; local Go discovery
+and the resolved Compose policy were checked on the development laptop.
 
 After this version is deployed, set these in the active checkout's `.env`:
 
@@ -387,19 +387,21 @@ app and use it as the callback in the server's Settings → Media:
 http://127.0.0.1:4184/media/spotify/callback
 ```
 
-On the laptop, keep this SSH command running during login:
+On the laptop, keep this SSH command running during login. Replace
+`your-user` with your server SSH username and `192.168.1.10` with your dashboard
+server's LAN address (port `4173` is the dashboard's configured port):
 
 ```sh
-ssh -N -L 127.0.0.1:4184:192.168.1.10:4173 joeg@192.168.1.10
+ssh -N -L 127.0.0.1:4184:192.168.1.10:4173 your-user@192.168.1.10
 ```
 
 Open `http://127.0.0.1:4184/settings?section=media` in your browser, save your public
 Client ID and that callback, select Connect Spotify and approve the permissions in
-that same browser. The callback passes through SSH to Mighty: tokens are stored in
-Mighty's database, not on the laptop. After Media shows the account and current
+that same browser. The callback passes through SSH to your dashboard server. Tokens
+are stored in the server's database, not on the laptop. After Media shows the account and current
 playback, end SSH with Ctrl-C. No router forwarding, public hostname or permanently
-running tunnel is required. Future token refresh happens directly on Mighty; an
-explicit reconnect would use the tunnel again. These instructions assume SSH access
+running tunnel is required. Future token refresh happens directly on the dashboard
+server; an explicit reconnect would use the tunnel again. These instructions assume SSH access
 is already configured; do not broaden SSH/Docker privileges merely for login.
 
 For a local Go preview at port 4182, use its separate registered loopback callback
