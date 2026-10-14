@@ -14,6 +14,43 @@ restricted to the dashboard endpoint. Keep per-device backups, identifiers and
 signing keys outside public source control. Household databases, uploaded photos,
 caches, credentials and generated binaries are also ignored by this repository.
 
+## Screenshots
+
+Captured at the frame’s **1024 × 600** resolution with a fictional household,
+a sample location, and simulated weather, sports and media data. The cookbook
+shows example saved recipes. Click any screenshot to open it at full size.
+
+[![Today — weather, agenda, chores and shopping summaries](docs/screenshots/today.jpg)](docs/screenshots/today.jpg)
+
+| Calendar — shared day timeline | Chores — assignments and routines |
+| --- | --- |
+| [![Calendar — shared day timeline](docs/screenshots/calendar-day.jpg)](docs/screenshots/calendar-day.jpg) | [![Chores — assignments and routines](docs/screenshots/chores.jpg)](docs/screenshots/chores.jpg) |
+
+| Shopping — stores and quantities | Cookbook — saved recipes and favorites |
+| --- | --- |
+| [![Shopping — stores and quantities](docs/screenshots/shopping.jpg)](docs/screenshots/shopping.jpg) | [![Cookbook — saved recipes and favorites](docs/screenshots/cookbook.jpg)](docs/screenshots/cookbook.jpg) |
+
+| Sports — schedules across leagues | Media — music and speaker controls |
+| --- | --- |
+| [![Sports — schedules across leagues](docs/screenshots/sports.jpg)](docs/screenshots/sports.jpg) | [![Media — music and speaker controls](docs/screenshots/media.jpg)](docs/screenshots/media.jpg) |
+
+<details>
+<summary>More workflows: cooking, people, recurrence, dimming, results and TV status</summary>
+
+| Cooking mode — ingredient and step checklists | People — household profiles |
+| --- | --- |
+| [![Cooking mode — ingredient and step checklists](docs/screenshots/cooking-mode.jpg)](docs/screenshots/cooking-mode.jpg) | [![People — household profiles](docs/screenshots/people.jpg)](docs/screenshots/people.jpg) |
+
+| Recurring events — weekday schedules | Display — night brightness schedule |
+| --- | --- |
+| [![Recurring events — weekday schedules](docs/screenshots/recurring-events.jpg)](docs/screenshots/recurring-events.jpg) | [![Display — night brightness schedule](docs/screenshots/night-dimming.jpg)](docs/screenshots/night-dimming.jpg) |
+
+| Sports — recent results | Devices — TV playback and art mode |
+| --- | --- |
+| [![Sports — recent results](docs/screenshots/sports-results.jpg)](docs/screenshots/sports-results.jpg) | [![Devices — TV playback and art mode](docs/screenshots/devices.jpg)](docs/screenshots/devices.jpg) |
+
+</details>
+
 ## Develop
 
 Requires Go 1.26 or newer. No Node.js or Docker is needed.
@@ -36,7 +73,7 @@ SQLite defaults to `data/dashboard.sqlite`; entries, people, photos and completi
 ## Features
 
 - Today: compact agenda rows and two-column summary tiles for pending chores by assignee (including Anyone) and shopping by store (including Any store). Counts include every pending item, not just the first few; chores count only when due on the household date, and picked-up shopping is excluded. Only groups with pending items occupy space. Tap a tile for that person's chores or store's shopping; total links open the full lists. Home weather shows temperature, feels-like, daily high/low and precipitation chance.
-- Calendar: Day with person lanes, 3 days with date lanes, rolling Week agendas, Month with event dots and day drilldown. Morning, Afternoon and Evening jump through the time grid. Arrows and horizontal swipes move by the selected period. The selected view is remembered in a browser cookie.
+- Calendar: Day with one shared household timeline and person badges, 3 days with date lanes, rolling Week agendas, Month with event dots and day drilldown. Morning, Afternoon and Evening jump through the time grid. Arrows and horizontal swipes move by the selected period. The selected view is remembered in a browser cookie.
 - Calendar events: timed or all-day, optional end time, location and household member assignment. Repeat daily, weekdays, weekly, selected weekdays, monthly or yearly, with intervals of 1–99 and an optional inclusive end date. Calendar views expand a single stored series; edits and deletion apply to the entire series. Per-occurrence exceptions and edits are not yet supported. Overlap handling opens the full day agenda when necessary.
 - Settings → People: persistent names, optional local JPG/PNG avatars, editing and reversible archiving. People populate chore and calendar assignment dropdowns; photos or initials also identify chore owners. Renaming keeps assignments linked. Archived people remain on existing assignments but are hidden from new ones.
 - Chores: an Everyone / Anyone / person selector combines with Today, routine and All schedules views; the person choice persists while switching those views. Archived people with assignments remain filterable. One-time tasks or the same repeating schedules as events, with owner and routine filters. Today shows only due chores; All schedules lets you edit chores not due today. One-time chores remain available from their start date until completed. Recurring completion is scoped to each scheduled household date. Off-schedule chores cannot be marked complete.
