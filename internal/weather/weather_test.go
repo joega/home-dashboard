@@ -305,3 +305,26 @@ func TestPrecipitationLabelsFollowHomeDayForecast(t *testing.T) {
 		})
 	}
 }
+
+func TestAtmosphereUsesLiveConditionsAndHomeSun(t *testing.T) {
+	for _, now := range []time.Time{
+		time.Date(2026, 10, 14, 16, 0, 0, 0, time.UTC),
+		time.Date(2026, 10, 14, 4, 0, 0, 0, time.UTC),
+	} {
+		for code, want := range map[int]string{0: "clear", 2: "partly-cloudy", 3: "cloudy", 61: "rain", 95: "storm", 75: "snow", 45: "fog"} {
+			cfg := DefaultSettings()
+			cfg.Background = "sunny"
+			cfg.Theme = "light"
+			f := fixture(now)
+			f.Current.Code = code
+			v := MakeView(cfg, &f, now, false, false)
+			if !v.Available || v.Atmosphere != want || v.Daylight != (now.Hour() == 16) {
+				t.Fatalf("code %d at %s: atmosphere %q daylight %v", code, now, v.Atmosphere, v.Daylight)
+			}
+			v = MakeView(cfg, &f, now.Add(3*time.Hour), false, true)
+			if v.Available || v.Atmosphere != "" {
+				t.Fatal("expired forecast retained a live sky", v)
+			}
+		}
+	}
+}

@@ -178,8 +178,8 @@ func IsDay(t time.Time, lat, lon float64) bool {
 }
 
 type View struct {
-	Enabled, Available, Stale, Loading                                                                                                         bool
-	Location, ZIP, Units, Scene, Theme, Condition, Icon, Temperature, FeelsLike, Low, High, Rain, PrecipitationLabel, Updated, Status, Preview string
+	Enabled, Available, Stale, Loading, Daylight                                                                                                           bool
+	Location, ZIP, Units, Scene, Theme, Condition, Icon, Temperature, FeelsLike, Low, High, Rain, PrecipitationLabel, Updated, Status, Preview, Atmosphere string
 }
 
 // precipitationLabel describes the same local day as the displayed daily
@@ -232,6 +232,8 @@ func MakeView(cfg Settings, f *Forecast, now time.Time, loading bool, failed boo
 		v.Stale = failed || now.Sub(f.RetrievedAt) > Refresh || now.Sub(f.Current.Time) > 45*time.Minute
 		kind, label := Condition(f.Current.Code)
 		v.Condition = label
+		v.Atmosphere = kind
+		v.Daylight = IsDay(now, cfg.Location.Latitude, cfg.Location.Longitude)
 		v.Icon = kind
 		v.Temperature = Temperature(f.Current.Temperature, cfg.Units)
 		v.FeelsLike = Temperature(f.Current.FeelsLike, cfg.Units)
@@ -258,7 +260,7 @@ func MakeView(cfg Settings, f *Forecast, now time.Time, loading bool, failed boo
 			if kind == "clear" || kind == "partly-cloudy" {
 				v.Scene = "sunny"
 			}
-			if !IsDay(now, cfg.Location.Latitude, cfg.Location.Longitude) {
+			if !v.Daylight {
 				v.Scene = "night"
 				if kind == "clear" {
 					v.Icon = "night"

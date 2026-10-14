@@ -120,6 +120,12 @@ func TestWeatherHTTPSettingsAndPreview(t *testing.T) {
 	if !strings.Contains(body, `data-weather="storm"`) || !strings.Contains(body, "20°") || !strings.Contains(body, "Rain chance 55%") || !strings.Contains(body, "Background preview: storm") || strings.Contains(body, "Thunderstorms") {
 		t.Fatal("scene preview falsified weather")
 	}
+	if !strings.Contains(body, `weather-atmospheric`) || !strings.Contains(body, `data-atmosphere="rain"`) {
+		t.Fatal("Today sky did not follow the live conditions")
+	}
+	if strings.Contains(get("/settings?section=weather").Body.String(), `weather-atmospheric`) {
+		t.Fatal("Today-only atmosphere appeared in settings")
+	}
 	for i := 0; i < 10; i++ {
 		get("/calendar")
 		get("/")

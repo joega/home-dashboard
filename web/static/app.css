@@ -257,3 +257,27 @@ body[data-theme="dark"] .media-card{background:rgba(28,36,41,.30)}body[data-them
 
 .profile-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}.profile-choices .profile-choice{margin:0;min-width:0;min-height:78px;padding:12px;gap:12px;font-size:18px}.profile-choice-household{grid-column:1/-1}.profile-choice-label{display:block;min-width:0;flex:1;overflow-wrap:anywhere}.profile-choices .avatar{width:48px;height:48px;flex-shrink:0;font-size:20px}.profile-choices .avatar img{width:48px;height:48px}.profile-choices small{display:block;font-size:12px;line-height:1.4;margin-top:3px}.profile-sheet .sheet-heading h2{font-size:32px;letter-spacing:-.7px}.today-grid .summary-total{font-size:15px;white-space:nowrap}.today-grid .event-row.event-summary:hover{background:transparent}.today-grid .event-row.event-summary.featured:hover{background:var(--peach)}
 @media(max-width:600px){.profile-choices{gap:10px}.profile-choices .profile-choice{padding:10px;gap:8px;font-size:16px;min-height:70px}.profile-choices .avatar,.profile-choices .avatar img{width:40px;height:40px}.profile-sheet .sheet-heading h2{font-size:29px}}
+
+/* A small, static sky follows the readings, independently of body previews. */
+body .weather-card.weather-atmospheric{--sky-top:#415a6d;--sky-bottom:#617d8d;position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(115deg,var(--sky-top),var(--sky-bottom));border-color:rgba(45,68,84,.35);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.weather-atmospheric>div{position:relative;z-index:1}
+.weather-atmospheric:before,.weather-atmospheric:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0}
+.weather-atmospheric:before{background:radial-gradient(ellipse at 72% 110%,rgba(220,231,237,.2),transparent 50%),radial-gradient(ellipse at 25% -45%,rgba(239,246,250,.18),transparent 65%)}
+.weather-atmospheric:after{background:linear-gradient(90deg,rgba(8,22,36,.16),rgba(8,22,36,.24))}
+body .weather-card.weather-atmospheric[data-atmosphere=clear],body .weather-card.weather-atmospheric[data-atmosphere=partly-cloudy]{--sky-top:#21608b;--sky-bottom:#3a7b9b}
+.weather-atmospheric[data-atmosphere=clear]:before,.weather-atmospheric[data-atmosphere=partly-cloudy]:before{background:radial-gradient(circle at 79% -5%,#fff0b2 0 15px,rgba(255,224,144,.3) 16px,transparent 100px),radial-gradient(ellipse at 65% 125%,rgba(236,245,249,.3),transparent 48%)}
+.weather-atmospheric[data-atmosphere=partly-cloudy]:after{background:radial-gradient(ellipse at 70% 110%,rgba(230,240,246,.18),transparent 65%),linear-gradient(90deg,rgba(8,22,36,.16),rgba(8,22,36,.24))}
+.weather-atmospheric[data-atmosphere=cloudy]:before{background:radial-gradient(ellipse 160px 60px at 60% -12%,rgba(239,246,250,.38),transparent 72%),radial-gradient(ellipse 150px 50px at 82% 5%,rgba(224,235,242,.32),transparent 75%),radial-gradient(ellipse 240px 75px at 40% 120%,rgba(226,237,243,.25),transparent 75%)}
+body .weather-card.weather-atmospheric[data-atmosphere=rain]{--sky-top:#304e65;--sky-bottom:#506c7b}
+.weather-atmospheric[data-atmosphere=rain]:before{background:repeating-linear-gradient(112deg,transparent 0 20px,rgba(228,240,250,.12) 21px,transparent 22px 40px),radial-gradient(ellipse at 60% -60%,rgba(218,230,236,.28),transparent 70%)}
+body .weather-card.weather-atmospheric[data-atmosphere=storm]{--sky-top:#1e3048;--sky-bottom:#45586a}
+.weather-atmospheric[data-atmosphere=storm]:before{background:repeating-linear-gradient(112deg,transparent 0 17px,rgba(224,238,250,.1) 18px,transparent 19px 32px),radial-gradient(ellipse at 80% -60%,rgba(196,211,224,.32),transparent 75%)}
+body .weather-card.weather-atmospheric[data-atmosphere=snow]{--sky-top:#4b657e;--sky-bottom:#688597}
+.weather-atmospheric[data-atmosphere=snow]:before{background:radial-gradient(circle,rgba(255,255,255,.4) 1px,transparent 2px) 0 0/37px 31px,radial-gradient(circle,rgba(255,255,255,.25) 1px,transparent 2px) 16px 13px/53px 43px}
+body .weather-card.weather-atmospheric[data-atmosphere=fog]{--sky-top:#4e666d;--sky-bottom:#6b8286}
+.weather-atmospheric[data-atmosphere=fog]:before{background:repeating-linear-gradient(176deg,transparent 0 18px,rgba(236,243,240,.1) 32px,transparent 48px)}
+body .weather-card.weather-atmospheric[data-daylight=false]{--sky-top:#0c1d35;--sky-bottom:#253c58;border-color:rgba(170,193,218,.16)}
+.weather-atmospheric[data-daylight=false][data-atmosphere=clear]:before,.weather-atmospheric[data-daylight=false][data-atmosphere=partly-cloudy]:before{background:radial-gradient(circle at 79% -5%,#d6e4ed 0 10px,rgba(209,226,245,.16) 11px,transparent 70px),radial-gradient(circle,rgba(225,236,250,.25) 1px,transparent 2px) 9px 6px/87px 51px}
+body[data-theme=dark] .weather-card.weather-atmospheric:after{background-color:rgba(0,0,0,.2)}
+body .weather-card.weather-atmospheric .weather-place span,body .weather-card.weather-atmospheric .weather-current span,body .weather-card.weather-atmospheric .weather-range span,body .weather-card.weather-atmospheric .weather-source span,body .weather-card.weather-atmospheric .weather-source a,body .weather-card.weather-atmospheric .weather-icon{color:#edf4f8}
+body .weather-card.weather-atmospheric .weather-source .weather-stale{color:#ffe0af}
