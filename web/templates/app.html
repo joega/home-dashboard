@@ -18,6 +18,8 @@
 <meta name="theme-color" content="#23493d">
 <meta name="htmx-config" content='{"allowEval":false,"allowScriptTags":false,"includeIndicatorStyles":false,"selfRequestsOnly":true}'>
 <title>Home HQ · {{.Title}}</title>
+<link rel="icon" href="/static/favicon.ico?v={{.AssetVersion}}" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/static/favicon.svg?v={{.AssetVersion}}" type="image/svg+xml" sizes="any">
 <link rel="stylesheet" href="/static/app.css?v={{.AssetVersion}}">
 <script src="/static/vendor/htmx.min.js" defer></script><script src="/static/app.js?v={{.AssetVersion}}" defer></script><script src="/static/update.js?v={{.AssetVersion}}" defer></script>
 </head><body data-app-version="{{.AssetVersion}}" data-weather="{{.Weather.Scene}}" data-theme="{{.Weather.Theme}}">
