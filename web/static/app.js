@@ -273,23 +273,20 @@
   document.addEventListener("appearance",function(event){var theme=event.detail.theme;if(theme==="light"||theme==="dark"){document.body.dataset.theme=theme;var state=document.getElementById("weather-scene-state");if(state)state.dataset.theme=theme;}});
   document.addEventListener("htmx:afterSwap", update);
   document.addEventListener("htmx:historyRestore", update);
-  document.addEventListener("htmx:afterRequest", function (event) {
-    var connection=document.getElementById("connection"); if(connection) connection.hidden = event.detail.successful;
-  });
   document.addEventListener("recipeCooked", function(event) {
     var key=event.detail.key;
     if(typeof key === "string" && /^[0-9]+-[0-9]+$/.test(key)) {
       try { localStorage.removeItem('hq-recipe-' + key); } catch (_) {}
     }
   });
-  document.addEventListener("htmx:sendError", function () {var connection=document.getElementById("connection"); if(connection) connection.hidden = false;});
-  document.addEventListener("htmx:responseError", function () {var connection=document.getElementById("connection"); if(connection) connection.hidden = false;});
   document.addEventListener("DOMContentLoaded", update);
   window.addEventListener("load", layoutMenus);
   if(document.fonts && document.fonts.ready)document.fonts.ready.then(layoutMenus);
   setInterval(tick, 1000);
   setInterval(function () {
     if (document.hidden || document.querySelector(".sheet,[data-pause-refresh],.cookbook-page,[data-spotify-connected]") || document.querySelector(".htmx-request") || !window.htmx) return;
-    htmx.ajax("GET", location.pathname + location.search, {target:"#content",swap:"innerHTML"});
+    htmx.ajax("GET", location.pathname + location.search, {target:"#content",swap:"innerHTML",headers:{"X-Home-HQ-Background":"true"}}).catch(function () {
+      // The connection policy handles failed polls; keep the current screen.
+    });
   }, 30000);
 })();
