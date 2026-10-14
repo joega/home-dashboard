@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func itoa(n int) string          { return strconv.Itoa(n) }
@@ -538,7 +539,12 @@ func (a *App) recipeAddShopping(w http.ResponseWriter, r *http.Request) {
 		}
 		items = append(items, RecipeShoppingItem{Index: i, Name: r.Form.Get("name_" + itoa(i)), Quantity: r.Form.Get("quantity_" + itoa(i)), StoreID: storeID})
 	}
-	n, err := a.store.AddRecipeShopping(id, version, r.Form.Get("batch"), items)
+	actor, actorErr := a.entryActor(r)
+	if actorErr != nil {
+		a.fail(w, actorErr)
+		return
+	}
+	n, err := a.store.AddRecipeShoppingAs(id, version, r.Form.Get("batch"), items, actor, time.Now())
 	if err != nil {
 		p := a.cookbookPage(w, r, "shopping")
 		p.Recipe, _ = a.store.Recipe(id)

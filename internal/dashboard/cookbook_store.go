@@ -418,6 +418,9 @@ type RecipeShoppingItem struct {
 }
 
 func (s *Store) AddRecipeShopping(id int64, version int, token string, items []RecipeShoppingItem) (int, error) {
+	return s.AddRecipeShoppingAs(id, version, token, items, Person{}, time.Now())
+}
+func (s *Store) AddRecipeShoppingAs(id int64, version int, token string, items []RecipeShoppingItem, actor Person, at time.Time) (int, error) {
 	if len(token) != 48 || len(items) == 0 || len(items) > 80 {
 		return 0, errors.New("Choose the ingredients you need.")
 	}
@@ -481,8 +484,21 @@ func (s *Store) AddRecipeShopping(id int64, version int, token string, items []R
 		if duplicate > 0 {
 			continue
 		}
-		if _, err = tx.Exec("INSERT INTO entries(kind,title,quantity,shop_id,entry_key) VALUES('shopping',?,?,?,lower(hex(randomblob(16))))", name, quantity, personRef(item.StoreID)); err != nil {
+		actor, err = actorInTransaction(tx, actor)
+		if err != nil {
 			return 0, err
+		}
+		stamp := at.UTC().Format(time.RFC3339Nano)
+		result, e := tx.Exec("INSERT INTO entries(kind,title,quantity,shop_id,entry_key,created_by,created_by_name,created_at) VALUES('shopping',?,?,?,lower(hex(randomblob(16))),?,?,?)", name, quantity, personRef(item.StoreID), personRef(actor.ID), actor.Name, stamp)
+		if err = e; err != nil {
+			return 0, err
+		}
+		entryID, e := result.LastInsertId()
+		if e != nil {
+			return 0, e
+		}
+		if e = recordEntryActivity(tx, entryID, "added", actor, stamp, ""); e != nil {
+			return 0, e
 		}
 		added++
 	}

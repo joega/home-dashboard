@@ -12,6 +12,8 @@ import (
 )
 
 type Entry struct {
+	CreatedByID, CompletedByID                              int64
+	CreatedBy, CreatedAt, CompletedBy, CompletedAt          string
 	ShopID                                                  int64
 	ShopName                                                string
 	Repeat, RepeatUntil, Location                           string
@@ -49,6 +51,10 @@ func Open(path string, demo bool, today string) (*Store, error) {
 	}
 	s := &Store{db}
 	if err := s.migratePeople(); err != nil {
+		db.Close()
+		return nil, err
+	}
+	if err := s.migrateProfiles(); err != nil {
 		db.Close()
 		return nil, err
 	}
@@ -139,7 +145,7 @@ func (s *Store) Demo() bool {
 	return v == "true"
 }
 func (s *Store) List(kind, day string) ([]Entry, error) {
-	rows, err := s.db.Query("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,'') FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE kind=? ORDER BY CASE WHEN kind='event' AND start='' THEN 1 ELSE 0 END,start,entries.id", day, kind)
+	rows, err := s.db.Query("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,''),COALESCE(created_by,0),created_by_name,created_at,COALESCE(completed_by,0),completed_by_name,completed_at FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE kind=? ORDER BY CASE WHEN kind='event' AND start='' THEN 1 ELSE 0 END,start,entries.id", day, kind)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +153,7 @@ func (s *Store) List(kind, day string) ([]Entry, error) {
 	var entries []Entry
 	for rows.Next() {
 		var e Entry
-		if err := rows.Scan(&e.ID, &e.Kind, &e.Title, &e.Owner, &e.Routine, &e.Quantity, &e.Date, &e.Start, &e.End, &e.Daily, &e.Done, &e.PersonID, &e.HasPhoto, &e.Repeat, &e.RepeatEvery, &e.RepeatDays, &e.RepeatUntil, &e.Location, &e.ShopID, &e.ShopName); err != nil {
+		if err := rows.Scan(&e.ID, &e.Kind, &e.Title, &e.Owner, &e.Routine, &e.Quantity, &e.Date, &e.Start, &e.End, &e.Daily, &e.Done, &e.PersonID, &e.HasPhoto, &e.Repeat, &e.RepeatEvery, &e.RepeatDays, &e.RepeatUntil, &e.Location, &e.ShopID, &e.ShopName, &e.CreatedByID, &e.CreatedBy, &e.CreatedAt, &e.CompletedByID, &e.CompletedBy, &e.CompletedAt); err != nil {
 			return nil, err
 		}
 		e.Due = choreDue(e, day)
@@ -157,33 +163,65 @@ func (s *Store) List(kind, day string) ([]Entry, error) {
 }
 func (s *Store) Get(id int64, day string) (Entry, error) {
 	var e Entry
-	err := s.db.QueryRow("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,'') FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE entries.id=?", day, id).Scan(&e.ID, &e.Kind, &e.Title, &e.Owner, &e.Routine, &e.Quantity, &e.Date, &e.Start, &e.End, &e.Daily, &e.Done, &e.PersonID, &e.HasPhoto, &e.Repeat, &e.RepeatEvery, &e.RepeatDays, &e.RepeatUntil, &e.Location, &e.ShopID, &e.ShopName)
+	err := s.db.QueryRow("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,''),COALESCE(created_by,0),created_by_name,created_at,COALESCE(completed_by,0),completed_by_name,completed_at FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE entries.id=?", day, id).Scan(&e.ID, &e.Kind, &e.Title, &e.Owner, &e.Routine, &e.Quantity, &e.Date, &e.Start, &e.End, &e.Daily, &e.Done, &e.PersonID, &e.HasPhoto, &e.Repeat, &e.RepeatEvery, &e.RepeatDays, &e.RepeatUntil, &e.Location, &e.ShopID, &e.ShopName, &e.CreatedByID, &e.CreatedBy, &e.CreatedAt, &e.CompletedByID, &e.CompletedBy, &e.CompletedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = ErrMissing
 	}
 	e.Due = choreDue(e, day)
 	return e, err
 }
-func (s *Store) Save(e Entry) error {
+func (s *Store) Save(e Entry) error { return s.SaveAs(e, Person{}, time.Now()) }
+func (s *Store) SaveAs(e Entry, actor Person, at time.Time) error {
 	e = normalizeSchedule(e)
-	if e.ID == 0 {
-		_, err := s.db.Exec("INSERT INTO entries(kind,title,owner,routine,quantity,date,start,end,daily,person_id,entry_key,repeat,repeat_every,repeat_days,repeat_until,location,shop_id) VALUES(?,?,?,?,?,?,?,?,?,?,lower(hex(randomblob(16))),?,?,?,?,?,?)", e.Kind, e.Title, e.Owner, e.Routine, e.Quantity, e.Date, e.Start, e.End, e.Daily, personRef(e.PersonID), e.Repeat, e.RepeatEvery, e.RepeatDays, e.RepeatUntil, e.Location, personRef(e.ShopID))
-		return err
-	}
-	result, err := s.db.Exec("UPDATE entries SET title=?,owner=?,routine=?,quantity=?,date=?,start=?,end=?,daily=?,person_id=?,repeat=?,repeat_every=?,repeat_days=?,repeat_until=?,location=?,shop_id=? WHERE id=? AND kind=?", e.Title, e.Owner, e.Routine, e.Quantity, e.Date, e.Start, e.End, e.Daily, personRef(e.PersonID), e.Repeat, e.RepeatEvery, e.RepeatDays, e.RepeatUntil, e.Location, personRef(e.ShopID), e.ID, e.Kind)
+	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
-	n, err := result.RowsAffected()
-	if err == nil && n == 0 {
-		return ErrMissing
+	defer tx.Rollback()
+	actor, err = actorInTransaction(tx, actor)
+	if err != nil {
+		return err
 	}
-	return err
+	stamp := at.UTC().Format(time.RFC3339Nano)
+	action := "updated"
+	if e.ID == 0 {
+		result, err := tx.Exec("INSERT INTO entries(kind,title,owner,routine,quantity,date,start,end,daily,person_id,entry_key,repeat,repeat_every,repeat_days,repeat_until,location,shop_id,created_by,created_by_name,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,lower(hex(randomblob(16))),?,?,?,?,?,?,?,?,?)", e.Kind, e.Title, e.Owner, e.Routine, e.Quantity, e.Date, e.Start, e.End, e.Daily, personRef(e.PersonID), e.Repeat, e.RepeatEvery, e.RepeatDays, e.RepeatUntil, e.Location, personRef(e.ShopID), personRef(actor.ID), actor.Name, stamp)
+		if err != nil {
+			return err
+		}
+		e.ID, err = result.LastInsertId()
+		if err != nil {
+			return err
+		}
+		action = "added"
+	} else {
+		result, err := tx.Exec("UPDATE entries SET title=?,owner=?,routine=?,quantity=?,date=?,start=?,end=?,daily=?,person_id=?,repeat=?,repeat_every=?,repeat_days=?,repeat_until=?,location=?,shop_id=? WHERE id=? AND kind=?", e.Title, e.Owner, e.Routine, e.Quantity, e.Date, e.Start, e.End, e.Daily, personRef(e.PersonID), e.Repeat, e.RepeatEvery, e.RepeatDays, e.RepeatUntil, e.Location, personRef(e.ShopID), e.ID, e.Kind)
+		if err != nil {
+			return err
+		}
+		n, err := result.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if n == 0 {
+			return ErrMissing
+		}
+	}
+	if err = recordEntryActivity(tx, e.ID, action, actor, stamp, ""); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 func (s *Store) SetDone(id int64, day string, done bool) error {
 	return s.SetDoneAt(id, day, done, time.Now())
 }
 func (s *Store) SetDoneAt(id int64, day string, done bool, at time.Time) error {
+	return s.setDoneAs(id, day, done, at, nil)
+}
+func (s *Store) SetDoneAs(id int64, day string, done bool, at time.Time, actor Person) error {
+	return s.setDoneAs(id, day, done, at, &actor)
+}
+func (s *Store) setDoneAs(id int64, day string, done bool, at time.Time, actor *Person) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -222,13 +260,49 @@ func (s *Store) SetDoneAt(id int64, day string, done bool, at time.Time) error {
 	if err != nil {
 		return err
 	}
+	if actor != nil {
+		checked, e := actorInTransaction(tx, *actor)
+		if e != nil {
+			return e
+		}
+		actor = &checked
+	}
+	stamp := at.UTC().Format(time.RFC3339Nano)
+	if done && !wasDone {
+		who := Person{ID: personID.Int64, Name: name}
+		if actor != nil {
+			who = *actor
+		}
+		if _, err = tx.Exec("UPDATE entries SET completed_by=?,completed_by_name=?,completed_at=? WHERE id=?", personRef(who.ID), who.Name, stamp, id); err != nil {
+			return err
+		}
+		if err = recordEntryActivity(tx, id, "completed", who, stamp, day); err != nil {
+			return err
+		}
+	} else if !done && wasDone {
+		who := Person{}
+		if actor != nil {
+			who = *actor
+		}
+		if _, err = tx.Exec("UPDATE entries SET completed_by=NULL,completed_by_name='',completed_at='' WHERE id=?", id); err != nil {
+			return err
+		}
+		if err = recordEntryActivity(tx, id, "reopened", who, stamp, day); err != nil {
+			return err
+		}
+	}
 	if kind == "chore" {
+		assignedID, assignedName := personID, name
+		if actor != nil {
+			personID = sql.NullInt64{Int64: actor.ID, Valid: actor.ID > 0}
+			name = actor.Name
+		}
 		cycle := "once"
 		if daily {
 			cycle = day
 		}
 		if done && !wasDone {
-			_, err = tx.Exec("INSERT INTO chore_history(entry_key,entry_id,cycle,day,completed_at,person_id,person_name,title) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(entry_key,cycle) DO NOTHING", key, id, cycle, day, at.UTC().Format(time.RFC3339Nano), personID, name, title)
+			_, err = tx.Exec("INSERT INTO chore_history(entry_key,entry_id,cycle,day,completed_at,person_id,person_name,title,assigned_person_id,assigned_person_name) VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(entry_key,cycle) DO NOTHING", key, id, cycle, day, at.UTC().Format(time.RFC3339Nano), personID, name, title, assignedID, assignedName)
 		} else if !done {
 			_, err = tx.Exec("DELETE FROM chore_history WHERE entry_key=? AND cycle=?", key, cycle)
 		}

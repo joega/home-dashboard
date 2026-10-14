@@ -29,6 +29,7 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	CurrentPerson                                                                                                      Person
 	SpotifySearch                                                                                                      spotify.SearchResults
 	SpotifySearchDevice                                                                                                string
 	Spotify                                                                                                            spotify.View
@@ -88,6 +89,7 @@ type Page struct {
 type Row struct {
 	Entry        Entry
 	CSRF, Return string
+	ActorID      int64
 }
 type App struct {
 	spotify       *spotify.Service
@@ -142,7 +144,9 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 		"personRow":      func(person Person, p Page) PersonRow { return PersonRow{Person: person, CSRF: p.CSRF} },
 		"inc":            func(n int) int { return n + 1 },
 		"color":          color,
-		"row":            func(e Entry, p Page) Row { return Row{e, p.CSRF, p.Return} },
+		"row": func(e Entry, p Page) Row {
+			return Row{Entry: e, CSRF: p.CSRF, Return: p.Return, ActorID: p.CurrentPerson.ID}
+		},
 	}
 	templates, err := template.New("").Funcs(functions).ParseFS(web.Files, "templates/*.html")
 	if err != nil {
@@ -193,6 +197,8 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("POST /settings/weather", a.saveWeather)
 	mux.HandleFunc("POST /settings/sports", a.saveSportsSettings)
 	mux.HandleFunc("GET /sports/logos/{team}", a.sportsLogo)
+	mux.HandleFunc("GET /current-person", a.currentPersonForm)
+	mux.HandleFunc("POST /current-person", a.setCurrentPerson)
 	mux.HandleFunc("GET /people/{id}/edit", a.personForm)
 	mux.HandleFunc("GET /people/{id}/photo", a.personPhoto)
 	mux.HandleFunc("POST /people/{id}", a.savePerson)
@@ -246,6 +252,7 @@ func (a *App) protect(next http.Handler) http.Handler {
 func (a *App) base(w http.ResponseWriter, r *http.Request) Page {
 	p := Page{Now: time.Now().In(a.loc), Zone: a.loc.String(), AssetVersion: a.version, Demo: a.store.Demo()}
 	p.Today = p.Now.Format("2006-01-02")
+	p.CurrentPerson = a.currentPerson(r)
 	if c, err := r.Cookie("hq_calendar_mode"); err == nil && validMode(c.Value) {
 		p.CalendarMode = c.Value
 	}
@@ -258,6 +265,12 @@ func (a *App) base(w http.ResponseWriter, r *http.Request) Page {
 		}
 		p.CSRF = hex.EncodeToString(token[:])
 		http.SetCookie(w, &http.Cookie{Name: "hq_csrf", Value: p.CSRF, Path: "/", HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: r.TLS != nil})
+	}
+	if p.CurrentPerson.ID > 0 {
+		p.CalendarMode = ""
+		if mode, e := a.store.personCalendarMode(p.CurrentPerson.ID); e == nil {
+			p.CalendarMode = mode
+		}
 	}
 	return p
 }
@@ -289,6 +302,12 @@ func (a *App) page(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if p.View == "calendar" {
+		if p.CurrentPerson.ID > 0 {
+			if err := a.store.savePersonCalendarMode(p.CurrentPerson.ID, p.CalendarMode); err != nil {
+				a.fail(w, err)
+				return
+			}
+		}
 		http.SetCookie(w, &http.Cookie{Name: "hq_calendar_mode", Value: p.CalendarMode, Path: "/", MaxAge: 31536000, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: r.TLS != nil})
 	}
 	name := "page"
@@ -472,6 +491,10 @@ func (a *App) form(w http.ResponseWriter, r *http.Request) {
 	if kind == "event" {
 		p.Entry.Owner = "Household"
 	}
+	if p.CurrentPerson.ID > 0 && kind != "shopping" {
+		p.Entry.PersonID = p.CurrentPerson.ID
+		p.Entry.Owner = p.CurrentPerson.Name
+	}
 	if date := r.URL.Query().Get("date"); date != "" {
 		if _, err := time.Parse("2006-01-02", date); err == nil {
 			p.Entry.Date = date
@@ -573,7 +596,12 @@ func (a *App) save(w http.ResponseWriter, r *http.Request) {
 		a.render(w, "form", p)
 		return
 	}
-	if err = a.store.Save(e); err != nil {
+	actor, actorErr := a.entryActor(r)
+	if actorErr != nil {
+		a.fail(w, actorErr)
+		return
+	}
+	if err = a.store.SaveAs(e, actor, p.Now); err != nil {
 		a.fail(w, err)
 		return
 	}
@@ -601,7 +629,12 @@ func (a *App) complete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid completion state", 400)
 		return
 	}
-	if err = a.store.SetDoneAt(id, p.Today, done == "1", p.Now); err != nil {
+	actor, actorErr := a.entryActor(r)
+	if actorErr != nil {
+		a.fail(w, actorErr)
+		return
+	}
+	if err = a.store.SetDoneAs(id, p.Today, done == "1", p.Now, actor); err != nil {
 		a.fail(w, err)
 		return
 	}

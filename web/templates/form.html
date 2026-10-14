@@ -1,7 +1,8 @@
 {{define "form"}}<div class="modal-shell"><button class="backdrop" type="button" data-close aria-label="Close editor"></button><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="form-title" tabindex="-1">
 <header class="sheet-heading"><h2 id="form-title">{{.FormTitle}}</h2><button class="icon-button" type="button" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button></header>
 <form class="entry-form" hx-post="/entries/{{.Entry.Kind}}/{{.Entry.ID}}" hx-target="#content" hx-disabled-elt="button">
-<input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="return" value="{{.Return}}">
+<input type="hidden" name="actor_id" value="{{.CurrentPerson.ID}}"><input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="return" value="{{.Return}}">
+{{if .Entry.CreatedBy}}<p class="hint">Added by {{.Entry.CreatedBy}}{{if .Entry.CompletedBy}} · Completed by {{.Entry.CompletedBy}}{{end}}</p>{{end}}
 {{if .Error}}<p class="form-error" role="alert">{{.Error}}</p>{{end}}
 <label>{{if eq .Entry.Kind "shopping"}}Item{{else}}Title{{end}}<input name="title" value="{{.Entry.Title}}" maxlength="120" required autofocus autocomplete="off"></label>
 {{if eq .Entry.Kind "event"}}{{template "assignment" .}}<label>Date / starts on<input type="date" name="date" value="{{.Entry.Date}}" required></label><div class="form-two"><label>Start time<input type="time" name="start" value="{{.Entry.Start}}"></label><label>End time<input type="time" name="end" value="{{.Entry.End}}"></label></div><p class="hint">Leave the times empty for an all-day event.</p><label>Location<input name="location" value="{{.Entry.Location}}" maxlength="160" placeholder="For example, school entrance" autocomplete="off"></label>{{template "schedule" .}}{{end}}
