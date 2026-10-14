@@ -68,6 +68,7 @@ type Page struct {
 	DisplaySettings                                                                                  DisplaySettings
 	Weather                                                                                          weather.View
 	WeatherSettings                                                                                  weather.Settings
+	Forecast                                                                                         weather.ForecastView
 	Notice                                                                                           string
 	Shops                                                                                            []Shop
 	Shop                                                                                             Shop
@@ -195,7 +196,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("GET /appearance", a.appearance)
 	mux.HandleFunc("GET /frame/display-policy", a.displayPolicy)
 	mux.HandleFunc("POST /settings/display", a.saveDisplay)
-	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports", "/media"} {
+	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports", "/media", "/weather"} {
 		mux.HandleFunc("GET "+route, a.page)
 	}
 	mux.HandleFunc("GET /forms/{kind}/{id}", a.form)
@@ -300,7 +301,7 @@ func (a *App) page(w http.ResponseWriter, r *http.Request) {
 	if view == "" {
 		view = "today"
 	}
-	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" && view != "media" {
+	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" && view != "media" && view != "weather" {
 		http.NotFound(w, r)
 		return
 	}
@@ -336,7 +337,12 @@ func (a *App) load(p *Page, q url.Values) error {
 	if err != nil {
 		return err
 	}
-	p.Weather = a.weather.View(p.WeatherSettings, p.Now)
+	if p.View == "weather" {
+		p.Forecast = a.weather.ForecastView(p.WeatherSettings, p.Now, q.Get("date"))
+		p.Weather = p.Forecast.Current
+	} else {
+		p.Weather = a.weather.View(p.WeatherSettings, p.Now)
+	}
 	if p.View == "today" || p.View == "sports" || p.View == "settings" {
 		if err = a.loadSports(p, q); err != nil {
 			return err
@@ -393,6 +399,8 @@ func (a *App) load(p *Page, q url.Values) error {
 		}
 	}
 	switch p.View {
+	case "weather":
+		p.Title = "Weather"
 	case "media":
 		p.Title = "Media"
 	case "settings":

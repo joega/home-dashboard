@@ -45,3 +45,16 @@ ingredients already on hand, and steps. Cooking uses two larger working panes wi
 checklists; ingredients needed for Shopping are reviewed separately. Imports stay
 editable and the interface labels missing provider data. Phone actions sit in one
 row under the heading rather than consuming a tall vertical button stack.
+
+
+## Weather forecast
+
+Weather is a top-level section, also reached by tapping Today’s atmospheric weather
+strip. Keep the same compact page heading and translucent shell. Reuse the current
+conditions strip above wind and sunrise/sunset, followed by a horizontally scrolling
+hourly outlook and seven daily cards. Selecting a day changes its hourly outlook;
+Next 24 hours returns to the rolling forecast. The normal 1024×600 view fits all
+seven cards; smaller heights can scroll vertically. Phones scroll the daily cards
+horizontally and show condition labels. Forecast scrollers retain their positions
+through background swaps. Use static SVG weather icons and CSS skies; animations
+remain deferred. Empty, disabled, stale and limited-coverage states stay explicit.

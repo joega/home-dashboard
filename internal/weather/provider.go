@@ -246,6 +246,9 @@ func Parse(raw []byte, l Location, now time.Time) (Forecast, error) {
 		if e != nil {
 			return f, e
 		}
+		// Open-Meteo encodes daily date markers with its fixed utc_offset_seconds.
+		// Applying the location's varying DST offset can shift them to the prior date.
+		// See https://open-meteo.com/en/docs (timeformat).
 		d := Daily{Date: t.Add(time.Duration(p.Offset) * time.Second).Format("2006-01-02"), RainChance: r["precipitation_probability_max"]}
 		d.Low, e = number(r, "temperature_2m_min")
 		if e != nil {

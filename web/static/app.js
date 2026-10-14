@@ -187,8 +187,30 @@
     if (event.target.matches('[data-team-league],[data-sports-picker] input[name=teams]')) configureSportsPicker();
   });
 
+  var forecastPositions = new Map(), forecastBindings = new WeakSet();
+  function configureForecast() {
+    document.querySelectorAll('[data-forecast-scroll],[data-forecast-days]').forEach(function(track) {
+      if (forecastBindings.has(track)) return;
+      forecastBindings.add(track);
+      var days = track.hasAttribute('data-forecast-days');
+      var key = (days ? 'days:' : 'hours:') + (days ? track.dataset.forecastDays : track.dataset.forecastScroll);
+      if (forecastPositions.has(key)) track.scrollLeft = forecastPositions.get(key);
+      if (days) {
+        var selected = track.querySelector('[aria-current]');
+        if (selected && (selected.offsetLeft < track.scrollLeft || selected.offsetLeft + selected.offsetWidth > track.scrollLeft + track.clientWidth)) {
+          track.scrollLeft = Math.max(0, selected.offsetLeft - track.offsetLeft - 12);
+        }
+      }
+      track.addEventListener('scroll', function() {
+        if (!forecastPositions.has(key) && forecastPositions.size >= 32) forecastPositions.delete(forecastPositions.keys().next().value);
+        forecastPositions.set(key, track.scrollLeft);
+      }, {passive:true});
+    });
+  }
+
   function update() {
     recipeProgress();
+    configureForecast();
     configureSportsPicker();
     // Swap markers belong to response fragments, not cached history snapshots.
     document.querySelectorAll("[hx-swap-oob]").forEach(function (element) {element.removeAttribute("hx-swap-oob");});

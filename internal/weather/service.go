@@ -33,10 +33,9 @@ func (s *Service) Wake() {
 	default:
 	}
 }
-func (s *Service) View(cfg Settings, now time.Time) View {
+func (s *Service) snapshot(cfg Settings) (*Forecast, bool, bool) {
 	s.mu.RLock()
-	f := s.forecast
-	failed, loading, key := s.failed, s.loading, s.key
+	f, failed, loading, key := s.forecast, s.failed, s.loading, s.key
 	s.mu.RUnlock()
 	if f == nil || key != cfg.Location.Key() {
 		s.Wake()
@@ -45,7 +44,15 @@ func (s *Service) View(cfg Settings, now time.Time) View {
 		failed = false
 		loading = cfg.Enabled
 	}
+	return f, loading, failed
+}
+func (s *Service) View(cfg Settings, now time.Time) View {
+	f, loading, failed := s.snapshot(cfg)
 	return MakeView(cfg, f, now, loading, failed)
+}
+func (s *Service) ForecastView(cfg Settings, now time.Time, date string) ForecastView {
+	f, loading, failed := s.snapshot(cfg)
+	return MakeForecastView(cfg, f, now, date, loading, failed)
 }
 
 // Run owns all forecast requests. Browser refreshes only read the snapshot.

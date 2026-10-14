@@ -40,8 +40,8 @@ func rawFixture(now time.Time) []byte {
 	z, _ := time.LoadLocation(f.Location.Zone)
 	_, offset := now.In(z).Zone()
 	for _, d := range f.Daily {
-		day, _ := time.ParseInLocation("2006-01-02", d.Date, z)
-		for k, v := range map[string]any{"time": day.Unix(), "temperature_2m_min": 10., "temperature_2m_max": 20., "weather_code": 3, "sunrise": d.Sunrise.Unix(), "sunset": d.Sunset.Unix(), "precipitation_probability_max": 40} {
+		day, _ := time.Parse("2006-01-02", d.Date)
+		for k, v := range map[string]any{"time": day.Unix() - int64(offset), "temperature_2m_min": 10., "temperature_2m_max": 20., "weather_code": 3, "sunrise": d.Sunrise.Unix(), "sunset": d.Sunset.Unix(), "precipitation_probability_max": 40} {
 			daily[k] = append(daily[k], v)
 		}
 	}
