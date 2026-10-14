@@ -109,7 +109,7 @@ func TestWeatherViewFreshnessAndScenePreview(t *testing.T) {
 	if v.Available || v.Scene != "neutral" || v.Temperature != "" {
 		t.Fatal("expired weather looked current", v)
 	}
-	cfg.Location.ZIP = "02761"
+	cfg.Location.ZIP = "10002"
 	v = MakeView(cfg, &f, now, true, false)
 	if v.Available || v.Scene != "neutral" {
 		t.Fatal("old ZIP data leaked")
@@ -121,7 +121,7 @@ func TestWeatherViewFreshnessAndScenePreview(t *testing.T) {
 	if v.Available || v.Scene != "neutral" {
 		t.Fatal(v)
 	}
-	if IsDay(time.Date(2026, 10, 13, 4, 0, 0, 0, time.UTC), 41.98343, -71.33283) || !IsDay(now, 41.98343, -71.33283) {
+	if IsDay(time.Date(2026, 10, 13, 4, 0, 0, 0, time.UTC), 40.71427, -74.00597) || !IsDay(now, 40.71427, -74.00597) {
 		t.Fatal("solar day/night incorrect")
 	}
 }
@@ -180,7 +180,7 @@ func TestCacheRefreshBackoffAndRestart(t *testing.T) {
 	if !s.View(r.cfg, now.Add(Refresh)).Stale {
 		t.Fatal("failed refresh not labeled stale")
 	}
-	r.cfg.Location.ZIP = "02761"
+	r.cfg.Location.ZIP = "10002"
 	if s.View(r.cfg, now).Available {
 		t.Fatal("old location appeared under new ZIP")
 	}
@@ -195,29 +195,29 @@ type roundTrip func(*http.Request) (*http.Response, error)
 
 func (f roundTrip) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 func TestZIPMatchingTransportAndBounds(t *testing.T) {
-	response := `{"results":[{"name":"North Attleboro","admin1":"Massachusetts","country_code":"US","timezone":"America/New_York","latitude":41.98343,"longitude":-71.33283,"postcodes":["02760"]}]}`
+	response := `{"results":[{"name":"New York","admin1":"New York","country_code":"US","timezone":"America/New_York","latitude":40.71427,"longitude":-74.00597,"postcodes":["10001"]}]}`
 	c := NewClient()
 	c.HTTP.Transport = roundTrip(func(r *http.Request) (*http.Response, error) {
-		if r.URL.Host != "geocoding-api.open-meteo.com" || r.URL.Query().Get("name") != "02760" || r.URL.Query().Get("countryCode") != "US" {
+		if r.URL.Host != "geocoding-api.open-meteo.com" || r.URL.Query().Get("name") != "10001" || r.URL.Query().Get("countryCode") != "US" {
 			t.Fatal(r.URL)
 		}
 		w := httptest.NewRecorder()
 		w.WriteString(response)
 		return w.Result(), nil
 	})
-	l, err := c.ResolveZIP(context.Background(), "02760")
-	if err != nil || l.ZIP != "02760" || l.Zone != "America/New_York" {
+	l, err := c.ResolveZIP(context.Background(), "10001")
+	if err != nil || l.ZIP != "10001" || l.Zone != "America/New_York" {
 		t.Fatal(l, err)
 	}
-	response = `{"results":[{"name":"Wrong city","country_code":"US","timezone":"America/New_York","latitude":42,"longitude":-71,"postcodes":["02761"]}]}`
-	if _, err = c.ResolveZIP(context.Background(), "02760"); err == nil {
+	response = `{"results":[{"name":"Wrong city","country_code":"US","timezone":"America/New_York","latitude":42,"longitude":-71,"postcodes":["10002"]}]}`
+	if _, err = c.ResolveZIP(context.Background(), "10001"); err == nil {
 		t.Fatal("nonmatching postcode accepted")
 	}
 	if err = c.get(context.Background(), "http://192.168.1.1/", &l, 100); err == nil {
 		t.Fatal("arbitrary endpoint allowed")
 	}
 	response = "123456"
-	if err = c.get(context.Background(), "https://geocoding-api.open-meteo.com/v1/search?name=02760&countryCode=US", &l, 2); err == nil {
+	if err = c.get(context.Background(), "https://geocoding-api.open-meteo.com/v1/search?name=10001&countryCode=US", &l, 2); err == nil {
 		t.Fatal("oversized response accepted")
 	}
 	if !reflect.DeepEqual(ConditionPair(97), []string{"storm", "Thunderstorms"}) {

@@ -38,7 +38,7 @@ func TestWeatherSettingsCacheAndHouseholdPersistence(t *testing.T) {
 	s, path := testStore(t)
 	s.Save(Entry{Kind: "shopping", Title: "User groceries"})
 	cfg, _ := s.WeatherSettings()
-	if cfg.Location.ZIP != "02760" || cfg.Units != "F" || !cfg.Enabled {
+	if cfg.Location.ZIP != "10001" || cfg.Units != "F" || !cfg.Enabled {
 		t.Fatal(cfg)
 	}
 	p := &dashboardWeatherProvider{}
@@ -68,7 +68,7 @@ func TestWeatherSettingsCacheAndHouseholdPersistence(t *testing.T) {
 		t.Fatal("weather migration reset household")
 	}
 	previous := cfg.Location
-	cfg.Location.ZIP = "02761"
+	cfg.Location.ZIP = "10002"
 	s.SaveWeatherSettings(cfg)
 	if old, _ := s.LoadWeatherCache(previous); old != nil {
 		t.Fatal("old location cache survived change")
@@ -111,7 +111,7 @@ func TestWeatherHTTPSettingsAndPreview(t *testing.T) {
 		a.ServeHTTP(w, r)
 		return w
 	}
-	values := url.Values{"zip": {"02760"}, "units": {"C"}, "background": {"storm"}, "enabled": {"on"}}
+	values := url.Values{"zip": {"10001"}, "units": {"C"}, "background": {"storm"}, "enabled": {"on"}}
 	w := post(values)
 	if w.Code != 200 || !strings.Contains(w.Body.String(), "Weather settings saved.") || w.Header().Get("HX-Push-Url") != "/settings?section=weather" {
 		t.Fatal("settings not saved", w.Body.String())
@@ -136,17 +136,17 @@ func TestWeatherHTTPSettingsAndPreview(t *testing.T) {
 	values.Set("zip", "not-a-zip")
 	w = post(values)
 	cfg, _ := s.WeatherSettings()
-	if !strings.Contains(w.Body.String(), "five-digit") || cfg.Location.ZIP != "02760" {
+	if !strings.Contains(w.Body.String(), "five-digit") || cfg.Location.ZIP != "10001" {
 		t.Fatal("invalid ZIP changed settings")
 	}
-	values.Set("zip", "02761")
+	values.Set("zip", "10002")
 	provider.resolveFail = true
 	w = post(values)
 	cfg, _ = s.WeatherSettings()
-	if !strings.Contains(w.Body.String(), "lookup is unavailable") || cfg.Location.ZIP != "02760" {
+	if !strings.Contains(w.Body.String(), "lookup is unavailable") || cfg.Location.ZIP != "10001" {
 		t.Fatal("failed ZIP changed saved home")
 	}
-	values.Set("zip", "02760")
+	values.Set("zip", "10001")
 	values.Set("background", "<script>")
 	w = post(values)
 	cfg, _ = s.WeatherSettings()
@@ -201,5 +201,36 @@ func TestAppearanceMigrationAndIndependentRefresh(t *testing.T) {
 	body := w.Body.String()
 	if !strings.Contains(body, `data-theme="dark"`) || !strings.Contains(body, `id="appearance-refresh"`) || !strings.Contains(body, `class="topbar"`) {
 		t.Fatal("theme/menu missing")
+	}
+}
+
+func TestWeatherSampleDefaultPreservesSavedLocationOnUpgrade(t *testing.T) {
+	s, path := testStore(t)
+	cfg, err := s.WeatherSettings()
+	if err != nil || cfg.Location.ZIP != "10001" || cfg.Location.Name != "New York, NY" {
+		t.Fatal("new database must use the public sample", cfg, err)
+	}
+	cfg.Location = weather.Location{Name: "Saved household", ZIP: "98101", Zone: "America/Los_Angeles", Latitude: 47.6062, Longitude: -122.3321}
+	cfg.Units, cfg.Theme, cfg.Background, cfg.Enabled = "C", "dark", "snow", false
+	if err = s.SaveWeatherSettings(cfg); err != nil {
+		t.Fatal(err)
+	}
+	var before string
+	if err = s.db.QueryRow("SELECT value FROM settings WHERE key='weather'").Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	s.Close()
+	s, err = Open(path, false, "2026-10-14")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	var after string
+	if err = s.db.QueryRow("SELECT value FROM settings WHERE key='weather'").Scan(&after); err != nil {
+		t.Fatal(err)
+	}
+	saved, err := s.WeatherSettings()
+	if err != nil || before != after || saved != cfg {
+		t.Fatal("upgrade replaced saved weather settings", saved, err)
 	}
 }

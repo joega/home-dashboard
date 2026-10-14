@@ -43,7 +43,7 @@ type Settings struct {
 }
 
 func DefaultSettings() Settings {
-	return Settings{Location: Location{Name: "North Attleboro, MA", ZIP: "02760", Zone: "America/New_York", Latitude: 41.98343, Longitude: -71.33283}, Units: "F", Background: "live", Theme: "auto", Enabled: true}
+	return Settings{Location: Location{Name: "New York, NY", ZIP: "10001", Zone: "America/New_York", Latitude: 40.71427, Longitude: -74.00597}, Units: "F", Background: "live", Theme: "auto", Enabled: true}
 }
 func (s Settings) Validate() error {
 	if err := s.Location.Validate(); err != nil {
