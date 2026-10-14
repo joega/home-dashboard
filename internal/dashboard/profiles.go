@@ -3,6 +3,7 @@ package dashboard
 import (
 	"database/sql"
 	"errors"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,6 +12,17 @@ import (
 
 // A household profile is a convenient identity, not an authentication boundary.
 const currentPersonCookie = "hq_person"
+
+// Cookies share a host across ports; keep local previews and SSH tunnels separate.
+func currentPersonCookieName(r *http.Request) string {
+	_, port, e := net.SplitHostPort(r.Host)
+	if e == nil {
+		if n, e := strconv.Atoi(port); e == nil && n > 0 && n <= 65535 {
+			return currentPersonCookie + "_" + strconv.Itoa(n)
+		}
+	}
+	return currentPersonCookie
+}
 
 func (s *Store) migrateProfiles() error {
 	tx, e := s.db.Begin()
@@ -79,7 +91,7 @@ func recordEntryActivity(tx *sql.Tx, id int64, action string, actor Person, stam
 	return e
 }
 func (a *App) currentPerson(r *http.Request) Person {
-	c, e := r.Cookie(currentPersonCookie)
+	c, e := r.Cookie(currentPersonCookieName(r))
 	if e != nil {
 		return Person{}
 	}
@@ -144,7 +156,7 @@ func (a *App) setCurrentPerson(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.SetCookie(w, &http.Cookie{Name: currentPersonCookie, Value: strconv.FormatInt(id, 10), Path: "/", MaxAge: 31536000, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: r.TLS != nil})
+	http.SetCookie(w, &http.Cookie{Name: currentPersonCookieName(r), Value: strconv.FormatInt(id, 10), Path: "/", MaxAge: 31536000, HttpOnly: true, SameSite: http.SameSiteLaxMode, Secure: r.TLS != nil})
 	if r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("HX-Redirect", safeProfileReturn(r.Form.Get("return")))
 		w.WriteHeader(200)

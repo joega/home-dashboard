@@ -192,3 +192,11 @@ func TestRecurringCompletionIdentityIsScopedToItsDay(t *testing.T) {
 		t.Fatal("completion identity leaked across days")
 	}
 }
+
+func TestCurrentPersonCookiesAreSeparatedAcrossLocalPorts(t *testing.T) {
+	preview := httptest.NewRequest("GET", "http://127.0.0.1:4182/", nil)
+	tunnel := httptest.NewRequest("GET", "http://127.0.0.1:4184/", nil)
+	if currentPersonCookieName(preview) == currentPersonCookieName(tunnel) {
+		t.Fatal("local preview can change server profile through its SSH tunnel")
+	}
+}

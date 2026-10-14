@@ -58,7 +58,7 @@ Monthly/yearly rules use the last day of a shorter month when the start day does
 
 Use the person/avatar button in the top bar to choose the **current person**, or
 Household for shared use. Selection is remembered separately on each browser or
-frame. Profiles are a convenience, not login accounts or access restrictions.
+frame; local preview and SSH-tunnel ports keep separate selections. Profiles are a convenience, not login accounts or access restrictions.
 All household data and authorized media controls remain shared.
 
 New events and chores default to the current person; existing assignments stay
