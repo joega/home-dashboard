@@ -46,6 +46,7 @@ SQLite defaults to `data/dashboard.sqlite`; entries, people, photos and completi
 - Settings → Display: persistent night hours and backlight level for the native kiosk. Default 21:00–07:00 at 8%; daytime follows Android manual/adaptive brightness, with an optional fixed level. Opt-in dimming after no touch activity (default five minutes / 5%) restores on touch and never increases the current level on this frame. The server supplies time and household time zone; the kiosk caches valid settings and continues the schedule during connection loss. After an offline app restart with cached night scheduling enabled, it uses night brightness until time synchronization. These controls affect the frame, not desktop browsers. Motion wake and full screen-off remain unavailable until a real presence signal and reliable wake path are verified.
 - Weather foundation: one server-owned Open-Meteo request fetches current weather and seven days of hourly/daily forecasts, cached in SQLite. Successful forecasts refresh every 15 minutes; failures back off from one to 15 minutes and preserve usable cached data. Failed/late updates are labeled stale; current weather expires after two hours and falls back to an unavailable widget and neutral scene. Invalid data cannot replace the last good cache; ZIP changes isolate caches and discard late old-location writes. Page views do not fetch weather, and fresh cached forecasts survive server restarts. Inline weather settings pause periodic page refresh so edits are preserved.
 - Cookbook: your own household collection comes first, with manual entry for paper recipes, optional JPG/PNG photos, notes and favorites featured ahead of other recipes. Search by title, ingredient or tag; filter by meal, tag, maximum time, favorites or archived recipes. URL and Schema.org Recipe JSON-LD imports open an editable review before saving. Explore provides secondary TheMealDB discovery; save and adapt discoveries into your own book. Cooking mode offers larger ingredients and step checklists with progress remembered in each browser; Finish records last-cooked time and clears that browser's checks. Select missing ingredients for Shopping, review names and quantities, and choose stores before transferring. Matching pending items are skipped. Archive/restore and portable JSON-LD export are included. Pick dinner chooses randomly from the current filters' saved, active Dinner recipes. The native kiosk pauses touch-inactivity dimming during cooking; the night brightness schedule still applies.
+- Sports: a top-level Boston-only schedule/results view for the Red Sox, Bruins, Patriots, Celtics and Revolution. Team filters, Upcoming and Recent results show the next/last listed game across season breaks, home/away opponents, start times, final W/L/D results, venue and provider-supplied broadcasts. Unknown times are labeled TBD and missing scores stay missing. Settings → Sports can hide any of the five teams and toggle a compact Today summary (up to two games with the total count). Schedules and PNG logos are cached on the server; no ticker or full-league team browser is included.
 - Fonts, scripts, sky scenes and weather data are served to the frame from the dashboard origin. The server contacts Open-Meteo for weather and changed-ZIP resolution; the frame needs no external network access. Source adaptation notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Calendar-provider synchronization, weather on calendar events and animation are deferred. Container packaging is prepared for review; final deployment remains separate. Data is local to this server; this first version has no authentication and should stay on a trusted private network. The frame's restricted network policy does not protect other clients accessing this server.
@@ -111,9 +112,43 @@ verified. Media volume was restored to its previous value and the temporary payl
 removed; no kiosk change was needed. Timer sounds remain conditional on a clearer
 speaker check. Local frame sound is separate from controlling music on an Echo.
 
-### Sports (planned)
+### Sports
 
-Favorite-team settings and a Sports view for upcoming, live and recent games, with scores and start times. Adapt the provider normalization, team identities, freshness rules, bounded caches and adaptive polling from the separate `../sportray` project. Its providers and models are JavaScript/QML, so reuse the behavior and fixtures in Go server adapters; do not require Omarchy or the desktop plugin to run. All provider data and any team logos must reach the frame through this dashboard's origin. Recheck provider behavior when implementing.
+The Boston-first Sports section is implemented for the five requested teams.
+Upcoming normally covers the next 30 days, with each team's next listed game when
+it falls later; Recent results covers the past 30 days, with the last listed
+result when available across an off-season. A rolling schedule refresh retains a
+previously cached final result if the new feed contains no finals; retained results
+are labeled Cached. First-time setup cannot invent an older result absent from the
+provider response. Times use the household zone; TBD dates retain the provider's
+calendar date, and season-crossing dates include the year.
+
+Go adapters adapt Sportray's team identities, schedule/status normalization,
+response bounds and cache/failure policies. Patriots and Celtics combine ESPN's
+current and regular/postseason team schedules; Revolution combines its MLS
+results and future-fixture feeds. Bruins uses NHL's current-season club schedule;
+Red Sox uses a bounded MLB StatsAPI window. No provider references, arbitrary URLs,
+all-team catalogs, alerts or betting data are exposed to the frame.
+
+One server worker owns requests. Healthy quiet schedules revalidate at most every
+six hours, with an earlier check ten minutes before a known start. In-progress
+and likely playing-window games revalidate about every two minutes; repeated
+failures back off from one to fifteen minutes and preserve last-good snapshots.
+Browser page views never issue provider requests. Normal data refresh remains
+30 seconds on the client, so live scores are informational rather than a realtime
+ticker. Cached schedules older than seven days become unavailable instead of
+presenting them as current. Disabled teams are not fetched.
+
+The normalized schedule cache and the five reviewed PNG logo downloads persist
+in SQLite across restarts. Responses are limited to 2 MiB and 256 games per team;
+logos are limited to 1 MiB/1024 px and served only through the dashboard's origin,
+with local initials when unavailable. Provider redirects must stay HTTPS on the
+same reviewed host. Source attribution appears in Sports; provider data and team
+marks are not relicensed under this application's MIT license. ESPN's site APIs
+and the sports-provider feeds can change or become unavailable.
+
+Serving calendar game overlays, richer game details and other teams are separate
+future choices; this version stays focused on the household's five teams.
 
 ### Night display and presence
 
@@ -198,7 +233,7 @@ go test ./...
 go vet ./...
 ```
 
-Cookbook tests cover draft ownership, metadata import, public-network URL guards, image bounds, editing conflicts, provider caching, duplicate saving, recipe filters, filtered picking, export and atomic/idempotent Shopping transfers. Tests also cover persistent completion, database backups, calendar modes and overlap handling, validation, CSRF and cross-origin rejection, HTML escaping, demo initialization, legacy-owner migration, person rename/archive, upload validation and completion-credit persistence, recurrence intervals/bounds/month ends/daylight saving, scheduled chores and event-location escaping, store assignment/rename/archive, shopping filters and scoped clearing, weather provider units/arrays/timestamps, ZIP matching, refresh throttling/backoff, cache restart/location isolation, stale/expired scenes, scene-preview accuracy, automatic appearance and overrides, legacy theme settings, CSS-only appearance refresh, weather settings validation, display-policy validation/persistence, clock payload and CSRF protection, pending summary totals, stable group links and chore-assignee filtering. Browser validation is also required for layout and interactions. On 2026-10-13, the owner confirmed the PF1007L displayed the deployed server over the LAN in the kitchen. Automatic client updates were verified in an isolated browser deployment, including deferred editing/cooking and preserved checklist progress; a subsequent automatic code deployment on the kitchen frame has not yet been observed. On 2026-10-13, the Today weather widget, translucent scenes and touch navigation rendered on the PF1007L over USB with Wi-Fi off. A short static-calendar sample was nearly idle and reported about 73 MiB kiosk PSS; this is a baseline snapshot, not evidence about animation or long-running performance.
+Sports tests cover season/fixture coverage, home/away score orientation, zero versus missing scores, TBD/time-zone/year boundaries, postponed/canceled states, off-season retained results, response/redirect bounds, single-flight caching/backoff, disabled teams, settings persistence/CSRF, HTML escaping and local image fallbacks. Cookbook tests cover draft ownership, metadata import, public-network URL guards, image bounds, editing conflicts, provider caching, duplicate saving, recipe filters, filtered picking, export and atomic/idempotent Shopping transfers. Tests also cover persistent completion, database backups, calendar modes and overlap handling, validation, CSRF and cross-origin rejection, HTML escaping, demo initialization, legacy-owner migration, person rename/archive, upload validation and completion-credit persistence, recurrence intervals/bounds/month ends/daylight saving, scheduled chores and event-location escaping, store assignment/rename/archive, shopping filters and scoped clearing, weather provider units/arrays/timestamps, ZIP matching, refresh throttling/backoff, cache restart/location isolation, stale/expired scenes, scene-preview accuracy, automatic appearance and overrides, legacy theme settings, CSS-only appearance refresh, weather settings validation, display-policy validation/persistence, clock payload and CSRF protection, pending summary totals, stable group links and chore-assignee filtering. Browser validation is also required for layout and interactions. On 2026-10-13, the owner confirmed the PF1007L displayed the deployed server over the LAN in the kitchen. Automatic client updates were verified in an isolated browser deployment, including deferred editing/cooking and preserved checklist progress; a subsequent automatic code deployment on the kitchen frame has not yet been observed. On 2026-10-13, the Today weather widget, translucent scenes and touch navigation rendered on the PF1007L over USB with Wi-Fi off. A short static-calendar sample was nearly idle and reported about 73 MiB kiosk PSS; this is a baseline snapshot, not evidence about animation or long-running performance.
 
 Cookbook was checked in a browser at 1280×800 and 390×844, with real URL import,
 manual paper-recipe entry, favorites, editing, archive/restore, filtered picking,

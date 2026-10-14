@@ -58,7 +58,9 @@ func main() {
 	weatherCtx, cancelWeather := context.WithCancel(context.Background())
 	weatherDone := make(chan struct{})
 	go func() { defer close(weatherDone); app.RunWeather(weatherCtx) }()
-	defer func() { cancelWeather(); <-weatherDone }()
+	sportsDone := make(chan struct{})
+	go func() { defer close(sportsDone); app.RunSports(weatherCtx) }()
+	defer func() { cancelWeather(); <-weatherDone; <-sportsDone }()
 	server := &http.Server{Addr: *addr, Handler: app, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 16}
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)

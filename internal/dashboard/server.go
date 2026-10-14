@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"home-dashboard/internal/sports"
 	"home-dashboard/internal/weather"
 	"home-dashboard/web"
 	"html/template"
@@ -26,6 +27,9 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	Sports                                                                                                             sports.View
+	SportsSettings                                                                                                     sports.Settings
+	SportsTeams                                                                                                        []sports.Team
 	Recipe                                                                                                             Recipe
 	Recipes                                                                                                            []Recipe
 	RecipeFilter                                                                                                       RecipeFilter
@@ -75,6 +79,7 @@ type Row struct {
 type App struct {
 	recipeClient *http.Client
 	weather      *weather.Service
+	sports       *sports.Service
 	store        *Store
 	loc          *time.Location
 	templates    *template.Template
@@ -132,6 +137,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 		provider = providers[0]
 	}
 	a.weather = weather.NewService(store, provider)
+	a.sports = sports.NewService(store, sports.NewClient(), loc)
 	a.recipeClient = recipeHTTPClient()
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
@@ -148,7 +154,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("GET /appearance", a.appearance)
 	mux.HandleFunc("GET /frame/display-policy", a.displayPolicy)
 	mux.HandleFunc("POST /settings/display", a.saveDisplay)
-	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings"} {
+	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports"} {
 		mux.HandleFunc("GET "+route, a.page)
 	}
 	mux.HandleFunc("GET /forms/{kind}/{id}", a.form)
@@ -159,6 +165,8 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("POST /shopping/clear", a.clearShopping)
 	mux.HandleFunc("POST /reset-demo", a.resetDemo)
 	mux.HandleFunc("POST /settings/weather", a.saveWeather)
+	mux.HandleFunc("POST /settings/sports", a.saveSportsSettings)
+	mux.HandleFunc("GET /sports/logos/{team}", a.sportsLogo)
 	mux.HandleFunc("GET /people/{id}/edit", a.personForm)
 	mux.HandleFunc("GET /people/{id}/photo", a.personPhoto)
 	mux.HandleFunc("POST /people/{id}", a.savePerson)
@@ -240,7 +248,7 @@ func (a *App) page(w http.ResponseWriter, r *http.Request) {
 	if view == "" {
 		view = "today"
 	}
-	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" {
+	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" {
 		http.NotFound(w, r)
 		return
 	}
@@ -271,6 +279,11 @@ func (a *App) load(p *Page, q url.Values) error {
 		return err
 	}
 	p.Weather = a.weather.View(p.WeatherSettings, p.Now)
+	if p.View == "today" || p.View == "sports" || p.View == "settings" {
+		if err = a.loadSports(p, q); err != nil {
+			return err
+		}
+	}
 	p.DisplaySettings, err = a.store.DisplaySettings()
 	if err != nil {
 		return err
@@ -308,7 +321,7 @@ func (a *App) load(p *Page, q url.Values) error {
 	switch p.View {
 	case "settings":
 		p.SettingsSection = q.Get("section")
-		if p.SettingsSection != "stores" && p.SettingsSection != "weather" && p.SettingsSection != "display" {
+		if p.SettingsSection != "stores" && p.SettingsSection != "weather" && p.SettingsSection != "display" && p.SettingsSection != "sports" {
 			p.SettingsSection = "people"
 		}
 		p.Title = "Settings"
@@ -333,6 +346,9 @@ func (a *App) load(p *Page, q url.Values) error {
 		p.Shopping = active
 		p.ChoreSummary, p.ChorePending = pendingGroups(p.Chores, true)
 		p.ShoppingSummary, p.ShoppingPending = pendingGroups(p.Shopping, false)
+	case "sports":
+		p.Title = "Sports"
+		p.Subtitle = ""
 	case "calendar":
 		return a.loadCalendar(p, q)
 	case "chores":

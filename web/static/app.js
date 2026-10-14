@@ -102,12 +102,14 @@
   }
   window.addEventListener("resize", scrollSectionNav);
   function scrollStoreFilters() {
-    var filters=document.querySelector(".store-filters"), selected=filters && filters.querySelector("[aria-current]");
-    if(!selected)return;
-    var box=filters.getBoundingClientRect(), selectedBox=selected.getBoundingClientRect();
-    if(selectedBox.right>box.right)filters.scrollLeft+=selectedBox.right-box.right;
-    else if(selectedBox.left<box.left)filters.scrollLeft-=box.left-selectedBox.left;
+    document.querySelectorAll(".store-filters,.sports-team-filters").forEach(function(filters) {
+      var selected=filters.querySelector("[aria-current]");if(!selected)return;
+      var box=filters.getBoundingClientRect(), selectedBox=selected.getBoundingClientRect();
+      if(selectedBox.right>box.right)filters.scrollLeft+=selectedBox.right-box.right;
+      else if(selectedBox.left<box.left)filters.scrollLeft-=box.left-selectedBox.left;
+    });
   }
+
   function update() {
     recipeProgress();
     // Swap markers belong to response fragments, not cached history snapshots.
@@ -175,9 +177,11 @@
     if (event.shiftKey && document.activeElement === first) {event.preventDefault();last.focus();}
     else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first.focus();}
   });
-  document.addEventListener("htmx:beforeRequest", function () {
+  document.addEventListener("htmx:beforeRequest", function (event) {
     var scroller = document.querySelector(".list-scroll");
-    scrollTop = scroller ? scroller.scrollTop : 0;
+    var trigger = event.detail.elt;
+    var sportsNavigation = trigger && trigger.closest(".sports-team-filters,.sports-modes");
+    scrollTop = sportsNavigation ? 0 : (scroller ? scroller.scrollTop : 0);
   });
   document.addEventListener("appearance",function(event){var theme=event.detail.theme;if(theme==="light"||theme==="dark"){document.body.dataset.theme=theme;var state=document.getElementById("weather-scene-state");if(state)state.dataset.theme=theme;}});
   document.addEventListener("htmx:afterSwap", update);
