@@ -73,3 +73,38 @@ func TestTodayDrilldownAndChorePersonFilter(t *testing.T) {
 		t.Fatal("invalid filter did not recover to Everyone")
 	}
 }
+
+func TestTodayCalendarSummaryIsReadOnly(t *testing.T) {
+	s, _ := testStore(t)
+	s.db.Exec("UPDATE settings SET value='true' WHERE key='demo'")
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Now().In(loc)
+	day := now.Format("2006-01-02")
+	for _, e := range []Entry{
+		{Kind: "event", Title: "Today appointment", Date: day, Start: "09:00"},
+		{Kind: "event", Title: "Daily pickup", Date: now.AddDate(0, 0, -1).Format("2006-01-02"), Start: "15:00", Repeat: "daily", RepeatEvery: 1},
+		{Kind: "event", Title: "Future appointment", Date: now.AddDate(0, 0, 1).Format("2006-01-02"), Start: "09:00"},
+	} {
+		if e := s.Save(e); e != nil {
+			t.Fatal(e)
+		}
+	}
+	a, e := New(s, loc)
+	if e != nil {
+		t.Fatal(e)
+	}
+	w := httptest.NewRecorder()
+	a.ServeHTTP(w, httptest.NewRequest("GET", "http://household.test/", nil))
+	body := w.Body.String()
+	if w.Code != 200 || !strings.Contains(body, ">2 events ") || !strings.Contains(body, `href="/calendar?mode=day&amp;date=`+day+`"`) || strings.Contains(body, "Future appointment") {
+		t.Fatal("incorrect calendar count/link")
+	}
+	if strings.Contains(body, "New event") || strings.Contains(body, `hx-get="/forms/event/`) || strings.Contains(body, `hx-post="/reset-demo"`) {
+		t.Fatal("Today exposes calendar editing")
+	}
+	w = httptest.NewRecorder()
+	a.ServeHTTP(w, httptest.NewRequest("GET", "http://household.test/calendar?mode=day&date="+day, nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "Today appointment") || !strings.Contains(w.Body.String(), "Daily pickup") {
+		t.Fatal("calendar drilldown lost today's events")
+	}
+}
