@@ -47,6 +47,7 @@ SQLite defaults to `data/dashboard.sqlite`; entries, people, photos and completi
 - Weather foundation: one server-owned Open-Meteo request fetches current weather and seven days of hourly/daily forecasts, cached in SQLite. Successful forecasts refresh every 15 minutes; failures back off from one to 15 minutes and preserve usable cached data. Failed/late updates are labeled stale; current weather expires after two hours and falls back to an unavailable widget and neutral scene. Invalid data cannot replace the last good cache; ZIP changes isolate caches and discard late old-location writes. Page views do not fetch weather, and fresh cached forecasts survive server restarts. Inline weather settings pause periodic page refresh so edits are preserved.
 - Cookbook: your own household collection comes first, with manual entry for paper recipes, optional JPG/PNG photos, notes and favorites featured ahead of other recipes. Search by title, ingredient or tag; filter by meal, tag, maximum time, favorites or archived recipes. URL and Schema.org Recipe JSON-LD imports open an editable review before saving. Explore provides secondary TheMealDB discovery; save and adapt discoveries into your own book. Cooking mode offers larger ingredients and step checklists with progress remembered in each browser; Finish records last-cooked time and clears that browser's checks. Select missing ingredients for Shopping, review names and quantities, and choose stores before transferring. Matching pending items are skipped. Archive/restore and portable JSON-LD export are included. Pick dinner chooses randomly from the current filters' saved, active Dinner recipes. The native kiosk pauses touch-inactivity dimming during cooking; the night brightness schedule still applies.
 - Sports: schedules and results for any cataloged MLB, NHL, NBA, NFL, MLS or Premier League team. Settings → Sports searches by name/city/abbreviation, filters by league and saves up to 24 followed teams. The first six get horizontal shortcuts; additional teams stay available through More teams and All teams. Upcoming and Recent results show the next/last listed game across season breaks, home/away opponents, start times, final W/L/D results, venue and provider-supplied broadcasts. Unknown times are labeled TBD and missing scores stay missing. A compact Today summary shows up to two games with the total count. Schedules and PNG logos are cached on the server; there is no ticker.
+- Media: local Sony BRAVIA, Samsung TV and Google Cast discovery with distinct network availability, native power and app-reported playback. Add, rename or hide devices in Settings → Media. Optional Sony pre-shared-key or Samsung on-TV approval unlocks only play, pause, volume and mute. Samsung Frame Art Mode is checked after pairing where supported. No Home Assistant is required. Spotify connection is deferred until Premium is available; Echo discovery/control through Spotify remains to be verified.
 - Fonts, scripts, sky scenes and weather data are served to the frame from the dashboard origin. The server contacts Open-Meteo for weather and changed-ZIP resolution; the frame needs no external network access. Source adaptation notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Calendar-provider synchronization, weather on calendar events and animation are deferred. Container packaging is prepared for review; final deployment remains separate. Data is local to this server; this first version has no authentication and should stay on a trusted private network. The frame's restricted network policy does not protect other clients accessing this server.
@@ -63,14 +64,57 @@ The static background, Today widget, home ZIP/units settings and persistent fore
 
 The first complete Cookbook is implemented. The random dinner picker precedes a possible wheel animation. Serving scaling, automatic ingredient merging, OCR of handwritten recipes and additional formats such as Cooklang remain future work. Saved recipes are local and survive provider outages; browser checklists are device-specific and reset when recipe content changes. TheMealDB recipes do not always supply timings or servings, so those fields are labeled missing rather than inferred from the title.
 
+### Media
+
+Open Media to discover TVs and Google Cast devices. Discovery uses mDNS/SSDP every
+five minutes, with a manual scan button; status is polled every 15 seconds and the
+open dashboard refreshes about every 30 seconds. Page views read cached status.
+Discovered stable identities follow DHCP address changes. Manually added Samsung
+TVs are also probed for their public UPnP identity; a fallback address-only entry
+needs a router DHCP reservation. Devices that stop responding show unavailable,
+not a guessed power state. An off Sony can remain discoverable: native standby
+wins over stale Cast app advertisements, which are then suppressed.
+
+Playback titles depend on the app reporting a Cast media session. Native Netflix,
+HDMI inputs and other TV apps may supply no title; network presence alone never
+means something is playing. Samsung's public endpoint reports basic power, not
+Art Mode or reliable now-playing metadata. Optional pairing permits the separate
+Frame Art Mode query. Model/firmware differences may limit these APIs.
+
+Pair only if you want controls or the protected status fields. Sony pairing uses
+a pre-shared key configured on the TV's IP-control settings; a DHCP address change
+requires confirming it again rather than sending the saved key to a new address.
+Samsung pairing waits up to one minute for **Home HQ** approval on the TV. Controls
+are limited to play/pause, relative volume steps and mute, with fresh-status and
+rate guards; they are paused during confirmed standby or Art Mode. Discovery and
+polling never launch apps, change inputs, send remote keys or power on a TV. Any
+household dashboard user can use paired controls. Locks and heating remain outside
+this feature.
+
+Keys/tokens stay in SQLite on the server and never enter page HTML, browser storage
+or Git. Protect the data volume and backups. Device-issued TLS certificates for
+Cast and Samsung are pinned by public key after the first connection; changed keys
+are rejected before a Samsung token is sent. This is trust on first use on your LAN,
+not public-CA device authentication. Sony's local PSK API uses HTTP, so pair it only
+on a trusted network. Forget pairing clears local secrets/pins; revoke Home HQ on
+the TV separately to remove its stored authorization.
+
+Docker bridge networks may not receive multicast discovery. Manual IPv4 addition
+still works; [the optional Linux host-network profile](DEPLOYMENT.md#media-discovery-in-docker)
+enables discovery without a Docker socket or extra capabilities. The frame itself
+still contacts only the dashboard IP and port. Spotify is planned separately; this
+pass does not connect an account or issue music commands to Echo devices.
+
 ### Home status / Echo information (planned; waiting for Home Assistant)
 
 Deferred until Home Assistant is installed and running on the eventual dashboard
-server. The owner revised the initial Music-controls idea: device views on the
-frame must be **status-only**, including thermostat, lock, cameras and Echo devices.
+server. Home status views remain **status-only**, including thermostat, lock and cameras.
+Media is a separate, explicitly requested exception for bounded TV playback and
+volume controls after optional pairing.
 Children using the frame must not be able to change device settings. Existing
 Calendar, Chores, Shopping and Cookbook edits remain household dashboard features;
-this restriction applies to connected home-device commands.
+this restriction applies to Home status commands, not the separately approved
+Media controls.
 
 First verify compatible integrations and their actual permissions. The standard
 [Nest integration](https://www.home-assistant.io/integrations/nest/#sensor) requires
@@ -97,8 +141,9 @@ firewall can distinguish reads from writes inside an encrypted cloud API connect
 No device automations, heating control or door unlocking are planned.
 
 [Kitchen Frame's Music view](https://github.com/huntsyea/kitchen-frame/blob/main/dashboard/src/views/Music.svelte)
-remains a visual reference for now-playing artwork and room selection; playback,
-volume changes and Music Assistant streaming are deferred. Cooking timer
+remains a visual reference for now-playing artwork and room selection. Spotify
+connection and Echo music controls remain deferred; no Music Assistant or general
+Alexa API is included. Cooking timer
 announcements on the kitchen Echo would be a separate, explicitly approved output
 path with a fixed speaker, bounded messages and quiet hours. They are not part of
 strict status-only mode and must not enable general Alexa commands.

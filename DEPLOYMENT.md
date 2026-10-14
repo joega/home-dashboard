@@ -27,7 +27,7 @@ local Go development unchanged.
 - Named volume `home-hq_household-data` contains SQLite, its WAL sidecars and any
   explicitly created snapshots. Photos, recipe data and forecast caches live in
   SQLite; they are not baked into the image.
-- No host networking, Docker socket, privileged mode or extra Linux capabilities.
+- Default: bridge networking, no Docker socket, privileged mode or extra Linux capabilities. The optional Media discovery profile uses host networking on Linux.
 - Initial resource ceilings: 1 CPU, 512 MiB memory and 64 processes/threads; Go's
   memory target is 384 MiB. Adjust after observing real household usage.
 - Bounded Docker logs; native `-healthcheck` probes `/healthz` and opens no database
@@ -324,3 +324,49 @@ bash scripts/install-auto-update.sh --prepare /tmp/home-hq-units --interval 30
 systemd-analyze verify /tmp/home-hq-units/home-hq-update.service /tmp/home-hq-units/home-hq-update.timer
 python3 scripts/test-auto-update.py
 ```
+
+## Media discovery in Docker
+
+The default bridge can reach a TV by private IPv4 address, but typically cannot
+receive the LAN's mDNS/SSDP advertisements. Start with Settings → Media → Add by
+address; this requires no container changes. Use a router DHCP reservation for
+address-only entries. Even a saved stable identity cannot find a changed IP if
+multicast discovery is blocked.
+
+For automatic LAN discovery on a **Linux** server, an optional Compose overlay is
+included. It shares the host network namespace, which broadens the container's
+network access (including host loopback). It retains the non-root user, read-only
+root, capability drop, resource limits and existing household volume; no Docker
+socket is mounted. Bind the HTTP server to the intended LAN IP, not every interface.
+This profile has not been live-tested on Mighty; the local Go discovery and the
+resolved Compose policy were checked on the laptop.
+
+After this version is deployed, set these in the active checkout's `.env`:
+
+```dotenv
+DASHBOARD_BIND_IP=192.168.1.10
+DASHBOARD_PORT=4173
+COMPOSE_FILE=compose.yaml:compose.media-host.yaml
+```
+
+Then explicitly recreate just the dashboard with the existing image:
+
+```sh
+sudo docker compose config --quiet
+sudo docker compose up -d --no-build --pull never dashboard
+sudo docker compose exec dashboard /usr/local/bin/home-dashboard -healthcheck
+```
+
+For the installed automatic updater, the active checkout/configuration is
+`/var/lib/home-hq-updater/repo/.env`. Edit that managed file after the overlay has
+arrived there; changing the original user's checkout does not change the updater.
+Pause the timer while making this deployment configuration change, apply Compose
+from the managed checkout, verify health and Media discovery, then re-enable it.
+Future updates retain `COMPOSE_FILE` through `.env`; the same household named volume
+is preserved. Do not run `down -v`. Remove `COMPOSE_FILE` and recreate the dashboard
+to return to the default bridge. No host-network profile is enabled automatically.
+
+Pairing credentials are private SQLite data and are included in database backups.
+Keep host directories, volumes and backup files private. Never publish the
+container port to the internet. The frame's single dashboard-IP/port firewall does
+not need to change for Media: all TV protocol traffic originates from this server.

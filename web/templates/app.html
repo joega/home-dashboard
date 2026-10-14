@@ -34,6 +34,7 @@
 <a href="/chores" class="nav-item {{if eq .View "chores"}}selected{{end}}" {{if eq .View "chores"}}aria-current="page"{{end}}>Chores</a>
 <a href="/shopping" class="nav-item {{if eq .View "shopping"}}selected{{end}}" {{if eq .View "shopping"}}aria-current="page"{{end}}>Shopping</a>
 <a href="/sports" class="nav-item {{if eq .View "sports"}}selected{{end}}" {{if eq .View "sports"}}aria-current="page"{{end}}>Sports</a>
+<a href="/media" class="nav-item {{if eq .View "media"}}selected{{end}}" {{if eq .View "media"}}aria-current="page"{{end}}>Media</a>
 <a href="/cookbook" class="nav-item {{if eq .View "cookbook"}}selected{{end}}" {{if eq .View "cookbook"}}aria-current="page"{{end}}>Cookbook</a>
 </nav><button type="button" class="menu-scroll-button" data-menu-step="next" aria-label="Show more sections" aria-controls="sections-track" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div>
 <div class="topbar-tools">{{template "clock" .}}<a href="/settings" aria-label="Settings" title="Settings" class="settings-button {{if eq .View "settings"}}selected{{end}}" {{if eq .View "settings"}}aria-current="page"{{end}} hx-boost="true" hx-target="#content"><svg><use href="#i-settings"/></svg></a></div>
@@ -45,12 +46,12 @@
 {{if and (ne .View "calendar") (ne .View "today")}}<header class="page-header"><h1>{{.Title}}</h1><div class="header-actions">
 {{if eq .View "cookbook"}}{{template "cookbook-actions" .}}{{end}}
 {{if eq .View "chores"}}<form class="chore-person-filter" action="/chores" hx-get="/chores" hx-trigger="change" hx-target="#content" hx-push-url="true"><input type="hidden" name="routine" value="{{.Routine}}">{{if .AllSchedules}}<input type="hidden" name="schedules" value="all">{{end}}<select name="person" aria-label="Chore assignee"><option value="" {{if eq .PersonFilter ""}}selected{{end}}>Everyone</option><option value="none" {{if eq .PersonFilter "none"}}selected{{end}}>Anyone</option>{{range .People}}{{if or .Active (gt .Chores 0)}}<option value="{{.ID}}" {{if personSelected .ID $.PersonFilter}}selected{{end}}>{{.Name}}{{if not .Active}} (archived){{end}}</option>{{end}}{{end}}</select></form><button class="button" hx-get="/forms/chore/new?return={{urlquery .Return}}" hx-target="#drawer"><svg><use href="#i-plus"/></svg>New chore</button>{{end}}
-{{if and (eq .View "settings") (and (ne .SettingsSection "weather") (and (ne .SettingsSection "display") (ne .SettingsSection "sports")))}}{{if eq .SettingsSection "stores"}}<button class="button" hx-get="/stores/new/edit" hx-target="#drawer"><svg><use href="#i-plus"/></svg>Add store</button>{{else}}<button class="button" hx-get="/people/new/edit" hx-target="#drawer"><svg><use href="#i-plus"/></svg>Add person</button>{{end}}{{end}}
+{{if and (eq .View "settings") (and (ne .SettingsSection "weather") (and (ne .SettingsSection "display") (and (ne .SettingsSection "sports") (ne .SettingsSection "media"))))}}{{if eq .SettingsSection "stores"}}<button class="button" hx-get="/stores/new/edit" hx-target="#drawer"><svg><use href="#i-plus"/></svg>Add store</button>{{else}}<button class="button" hx-get="/people/new/edit" hx-target="#drawer"><svg><use href="#i-plus"/></svg>Add person</button>{{end}}{{end}}
 {{if eq .View "shopping"}}<button class="button" hx-get="/forms/shopping/new?return={{urlquery .Return}}" hx-target="#drawer"><svg><use href="#i-plus"/></svg>Add item</button>{{end}}
 </div></header>{{end}}
 {{if eq .View "today"}}{{template "today" .}}{{end}}{{if eq .View "calendar"}}{{template "calendar" .}}{{end}}{{if eq .View "chores"}}{{template "chores" .}}{{end}}{{if eq .View "shopping"}}{{template "shopping" .}}{{end}}
 {{if eq .View "settings"}}{{template "settings" .}}{{end}}
-{{if eq .View "sports"}}{{template "sports" .}}{{end}}
+{{if eq .View "sports"}}{{template "sports" .}}{{else if eq .View "media"}}{{template "media" .}}{{end}}
 {{if eq .View "cookbook"}}{{template "cookbook" .}}{{else}}{{if .Notice}}<p class="book-notice" role="status">{{.Notice}}</p>{{end}}{{end}}
 {{if and .Demo (ne .View "settings") (ne .View "cookbook")}}<form class="sample-note" hx-post="/reset-demo" hx-target="#content" hx-confirm="Remove all current example data and start with an empty household?"><input type="hidden" name="csrf" value="{{.CSRF}}"><span>Example data</span><button type="submit">Start empty</button></form>{{end}}
 {{end}}

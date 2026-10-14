@@ -72,6 +72,10 @@ func Open(path string, demo bool, today string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
+	if err := s.migrateMedia(); err != nil {
+		db.Close()
+		return nil, err
+	}
 	if err := s.migrateRecipes(); err != nil {
 		db.Close()
 		return nil, err
@@ -112,6 +116,12 @@ func Open(path string, demo bool, today string) (*Store, error) {
 			tx.Rollback()
 		}
 		if err != nil {
+			db.Close()
+			return nil, err
+		}
+	}
+	for _, suffix := range []string{"", "-wal", "-shm"} {
+		if err := os.Chmod(path+suffix, 0600); err != nil && !(suffix != "" && errors.Is(err, os.ErrNotExist)) {
 			db.Close()
 			return nil, err
 		}
@@ -262,11 +272,22 @@ func (s *Store) ClearShopping() error {
 	return err
 }
 func (s *Store) Backup(path string) error {
-	if _, err := os.Stat(path); err == nil {
-		return errors.New("backup target already exists")
+	// Reserve a private, empty output before SQLite writes any credential data.
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return errors.New("backup target already exists")
+		}
+		return err
 	}
-	_, err := s.db.Exec("VACUUM INTO ?", path)
-	return err
+	if err = f.Close(); err != nil {
+		return err
+	}
+	if _, err = s.db.Exec("VACUUM INTO ?", path); err != nil {
+		os.Remove(path)
+		return err
+	}
+	return nil
 }
 func Validate(e Entry, loc *time.Location) error {
 	e = normalizeSchedule(e)

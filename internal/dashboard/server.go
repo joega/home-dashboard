@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"home-dashboard/internal/media"
 	"home-dashboard/internal/sports"
 	"home-dashboard/internal/weather"
 	"home-dashboard/web"
@@ -27,6 +28,11 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	MediaDraft                                                                                                         media.Device
+	Media                                                                                                              media.View
+	MediaDevices                                                                                                       []media.Device
+	MediaDevice                                                                                                        media.Device
+	MediaCard                                                                                                          media.Card
 	Sports                                                                                                             sports.View
 	SportsSettings                                                                                                     sports.Settings
 	SportsTeams                                                                                                        []sports.Team
@@ -78,6 +84,7 @@ type Row struct {
 	CSRF, Return string
 }
 type App struct {
+	media        *media.Service
 	recipeClient *http.Client
 	weather      *weather.Service
 	sports       *sports.Service
@@ -145,6 +152,8 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	}
 	a.weather = weather.NewService(store, provider)
 	a.sports = sports.NewService(store, sports.NewClient(), loc)
+	mediaClient := media.NewClient()
+	a.media = media.NewService(store, mediaClient, media.LAN{Client: mediaClient})
 	a.recipeClient = recipeHTTPClient()
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
@@ -161,7 +170,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("GET /appearance", a.appearance)
 	mux.HandleFunc("GET /frame/display-policy", a.displayPolicy)
 	mux.HandleFunc("POST /settings/display", a.saveDisplay)
-	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports"} {
+	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports", "/media"} {
 		mux.HandleFunc("GET "+route, a.page)
 	}
 	mux.HandleFunc("GET /forms/{kind}/{id}", a.form)
@@ -182,6 +191,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("POST /stores/{id}", a.saveShop)
 	mux.HandleFunc("POST /stores/{id}/status", a.shopStatus)
 	a.registerCookbook(mux)
+	a.registerMedia(mux)
 	a.handler = a.protect(mux)
 	return a, nil
 }
@@ -255,7 +265,7 @@ func (a *App) page(w http.ResponseWriter, r *http.Request) {
 	if view == "" {
 		view = "today"
 	}
-	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" {
+	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" && view != "media" {
 		http.NotFound(w, r)
 		return
 	}
@@ -325,10 +335,19 @@ func (a *App) load(p *Page, q url.Values) error {
 	if err != nil {
 		return err
 	}
+	if p.View == "media" || p.View == "settings" {
+		p.Media = a.media.View(p.Now)
+		p.MediaDevices, err = a.store.MediaDevices()
+		if err != nil {
+			return err
+		}
+	}
 	switch p.View {
+	case "media":
+		p.Title = "Media"
 	case "settings":
 		p.SettingsSection = q.Get("section")
-		if p.SettingsSection != "stores" && p.SettingsSection != "weather" && p.SettingsSection != "display" && p.SettingsSection != "sports" {
+		if p.SettingsSection != "stores" && p.SettingsSection != "weather" && p.SettingsSection != "display" && p.SettingsSection != "sports" && p.SettingsSection != "media" {
 			p.SettingsSection = "people"
 		}
 		p.Title = "Settings"

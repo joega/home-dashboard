@@ -1,0 +1,8 @@
+# Optional Linux-only LAN discovery. Keep the default bridge unless multicast
+# discovery is needed. See DEPLOYMENT.md before enabling on the server.
+services:
+  dashboard:
+    network_mode: host
+    ports: !reset []
+    environment:
+      DASHBOARD_ADDR: "${DASHBOARD_BIND_IP:?Set the intended server LAN IP}:${DASHBOARD_PORT:-4173}"

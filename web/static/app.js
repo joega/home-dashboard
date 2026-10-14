@@ -261,7 +261,10 @@
     if (event.shiftKey && document.activeElement === first) {event.preventDefault();last.focus();}
     else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first.focus();}
   });
+  document.addEventListener("input",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");});
+  document.addEventListener("change",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");});
   document.addEventListener("htmx:beforeRequest", function (event) {
+    if(event.detail.elt && event.detail.elt.hasAttribute("data-media-poll") && (document.hidden || document.querySelector(".sheet,[data-pause-refresh]"))){event.preventDefault();return;}
     var scroller = document.querySelector(".list-scroll");
     var trigger = event.detail.elt;
     var sportsNavigation = trigger && trigger.closest(".sports-team-filters,.sports-modes,.sports-overflow");
