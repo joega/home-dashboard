@@ -125,64 +125,27 @@ func (a *App) loadCalendar(p *Page, q url.Values) error {
 	if mode == "week" {
 		count = 7
 	}
-	if mode == "day" {
-		names := map[string]bool{"Household": true}
-		for _, e := range p.Events {
-			names[owner(e)] = true
+	// Day view shares one timeline across the household. Multi-day views keep
+	// one lane per date; ownership is shown on each event instead of in lanes.
+	for i := 0; i < count; i++ {
+		d := date.AddDate(0, 0, i)
+		lane := Lane{Date: d.Format("2006-01-02"), Label: d.Format("Mon 2"), Caption: d.Format("January"), Today: d.Format("2006-01-02") == p.Today}
+		if mode == "day" {
+			lane.Label, lane.Caption = "Everyone", ""
 		}
-		owners := []string{"Household"}
-		for n := range names {
-			if n != "Household" {
-				owners = append(owners, n)
+		for _, e := range eventsOn(p.Events, lane.Date, a.loc) {
+			if e.Start == "" {
+				lane.AllDay = append(lane.AllDay, e)
+			} else {
+				lane.Events = append(lane.Events, e)
 			}
 		}
-		sort.Strings(owners[1:])
-		if len(owners) > 4 {
-			owners = append(owners[:3], "Others")
+		lane.Blocks = layout(lane.Events)
+		if mode == "week" && len(lane.Events) > 5 {
+			lane.More = len(lane.Events) - 5
+			lane.Events = lane.Events[:5]
 		}
-		for _, name := range owners {
-			lane := Lane{Date: p.CalDate, Label: name, Today: p.CalDate == p.Today, Color: color(Entry{Owner: name})}
-			for _, e := range eventsOn(p.Events, lane.Date, a.loc) {
-				match := owner(e) == name
-				if name == "Others" {
-					match = true
-					for _, n := range owners[:3] {
-						if owner(e) == n {
-							match = false
-						}
-					}
-				}
-				if e.Date == lane.Date && match {
-					if e.Start == "" {
-						lane.AllDay = append(lane.AllDay, e)
-					} else {
-						lane.Events = append(lane.Events, e)
-					}
-				}
-			}
-			lane.Blocks = layout(lane.Events)
-			p.Lanes = append(p.Lanes, lane)
-		}
-	} else {
-		for i := 0; i < count; i++ {
-			d := date.AddDate(0, 0, i)
-			lane := Lane{Date: d.Format("2006-01-02"), Label: d.Format("Mon 2"), Caption: d.Format("January"), Today: d.Format("2006-01-02") == p.Today}
-			for _, e := range eventsOn(p.Events, lane.Date, a.loc) {
-				if e.Date == lane.Date {
-					if e.Start == "" {
-						lane.AllDay = append(lane.AllDay, e)
-					} else {
-						lane.Events = append(lane.Events, e)
-					}
-				}
-			}
-			lane.Blocks = layout(lane.Events)
-			if mode == "week" && len(lane.Events) > 5 {
-				lane.More = len(lane.Events) - 5
-				lane.Events = lane.Events[:5]
-			}
-			p.Lanes = append(p.Lanes, lane)
-		}
+		p.Lanes = append(p.Lanes, lane)
 	}
 	p.NowTop = -1
 	p.NowIndex = -1

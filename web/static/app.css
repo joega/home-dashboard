@@ -281,3 +281,20 @@ body .weather-card.weather-atmospheric[data-daylight=false]{--sky-top:#0c1d35;--
 body[data-theme=dark] .weather-card.weather-atmospheric:after{background-color:rgba(0,0,0,.2)}
 body .weather-card.weather-atmospheric .weather-place span,body .weather-card.weather-atmospheric .weather-current span,body .weather-card.weather-atmospheric .weather-range span,body .weather-card.weather-atmospheric .weather-source span,body .weather-card.weather-atmospheric .weather-source a,body .weather-card.weather-atmospheric .weather-icon{color:#edf4f8}
 body .weather-card.weather-atmospheric .weather-source .weather-stale{color:#ffe0af}
+
+/* Day view shares the full width; ownership belongs to the event. */
+.calendar-event-heading{display:flex;align-items:center;gap:10px;width:100%;min-width:0}
+.calendar-event-heading>strong{flex:1;min-width:0}
+.calendar-owner-badge{display:inline-flex;align-items:center;gap:6px;max-width:42%;min-width:0;flex-shrink:0;font-size:11px;line-height:1.2;color:var(--ink)}
+.calendar-owner-badge>span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calendar-owner-badge .avatar{width:20px;height:20px;flex:0 0 20px;font-size:9px;background:rgba(36,43,39,.12);color:inherit}
+.calendar-owner-badge .avatar img{width:20px;height:20px;object-fit:cover}
+.calendar-app[data-mode=day] .all-day-event{display:inline-flex;align-items:center;gap:10px;min-height:36px}
+.calendar-app[data-mode=day] .all-day-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calendar-app[data-mode=day] .all-day-lanes>div{max-height:88px;overflow-y:auto;align-content:flex-start}
+.calendar-app[data-mode=day] .all-day-event .calendar-owner-badge{max-width:none}
+.calendar-app[data-mode=day] .timeline-event.short{padding:3px 8px;gap:1px;justify-content:flex-start}
+.calendar-app[data-mode=day] .timeline-event.short .calendar-event-heading>strong{font-size:14px;line-height:18px}
+.calendar-app[data-mode=day] .timeline-event.short .calendar-owner-badge .avatar,.calendar-app[data-mode=day] .timeline-event.short .calendar-owner-badge .avatar img{width:18px;height:18px}
+.calendar-app[data-mode=day] .timeline-event.short .calendar-owner-badge .avatar{flex-basis:18px}
+.calendar-app[data-mode=day] .timeline-event.short small{font-size:10px;line-height:12px}
