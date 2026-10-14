@@ -178,8 +178,35 @@ func IsDay(t time.Time, lat, lon float64) bool {
 }
 
 type View struct {
-	Enabled, Available, Stale, Loading                                                                                     bool
-	Location, ZIP, Units, Scene, Theme, Condition, Icon, Temperature, FeelsLike, Low, High, Rain, Updated, Status, Preview string
+	Enabled, Available, Stale, Loading                                                                                                         bool
+	Location, ZIP, Units, Scene, Theme, Condition, Icon, Temperature, FeelsLike, Low, High, Rain, PrecipitationLabel, Updated, Status, Preview string
+}
+
+// precipitationLabel describes the same local day as the displayed daily
+// probability. Hourly codes catch rain/snow transitions that a single daily
+// code cannot express. A dry/cloudy forecast defaults to rain rather than
+// suggesting snow without any forecast evidence; temperature alone cannot
+// reliably identify the precipitation type.
+func precipitationLabel(f *Forecast, d Daily, zone *time.Location) string {
+	rain, snow := false, false
+	include := func(code int) {
+		kind, _ := Condition(code)
+		rain = rain || kind == "rain" || kind == "storm"
+		snow = snow || kind == "snow"
+	}
+	include(d.Code)
+	for _, h := range f.Hourly {
+		if h.Time.In(zone).Format("2006-01-02") == d.Date {
+			include(h.Code)
+		}
+	}
+	if rain && snow {
+		return "Rain / snow chance"
+	}
+	if snow {
+		return "Snow chance"
+	}
+	return "Rain chance"
 }
 
 // Appearance follows the home sun even with weather disabled or unavailable.
@@ -216,6 +243,7 @@ func MakeView(cfg Settings, f *Forecast, now time.Time, loading bool, failed boo
 				v.High = Temperature(d.High, cfg.Units)
 				if d.RainChance != nil {
 					v.Rain = fmt.Sprintf("%.0f%%", *d.RainChance)
+					v.PrecipitationLabel = precipitationLabel(f, d, zone)
 				}
 				break
 			}

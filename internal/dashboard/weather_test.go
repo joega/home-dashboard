@@ -117,7 +117,7 @@ func TestWeatherHTTPSettingsAndPreview(t *testing.T) {
 		t.Fatal("settings not saved", w.Body.String())
 	}
 	body := get("/").Body.String()
-	if !strings.Contains(body, `data-weather="storm"`) || !strings.Contains(body, "20°") || !strings.Contains(body, "Rain / snow chance 55%") || !strings.Contains(body, "Background preview: storm") || strings.Contains(body, "Thunderstorms") {
+	if !strings.Contains(body, `data-weather="storm"`) || !strings.Contains(body, "20°") || !strings.Contains(body, "Rain chance 55%") || !strings.Contains(body, "Background preview: storm") || strings.Contains(body, "Thunderstorms") {
 		t.Fatal("scene preview falsified weather")
 	}
 	for i := 0; i < 10; i++ {

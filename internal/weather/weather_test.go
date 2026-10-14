@@ -258,3 +258,50 @@ func TestAppearanceFollowsSunIndependentlyOfWeather(t *testing.T) {
 		t.Fatal("appearance depended on host time zone")
 	}
 }
+
+func TestPrecipitationLabelsFollowHomeDayForecast(t *testing.T) {
+	// UTC has rolled into October 14, but the home forecast day is October 13.
+	now := time.Date(2026, 10, 14, 2, 0, 0, 0, time.UTC)
+	for _, tc := range []struct {
+		name                                 string
+		daily, firstHour, nextHour, tomorrow int
+		want                                 string
+	}{
+		{"warm cloudy day", 3, 3, 3, 75, "Rain chance"},
+		{"rain", 61, 61, 63, 75, "Rain chance"},
+		{"drizzle", 51, 53, 55, 3, "Rain chance"},
+		{"thunderstorms", 95, 95, 96, 3, "Rain chance"},
+		{"freezing rain", 66, 56, 67, 3, "Rain chance"},
+		{"snow", 71, 73, 85, 61, "Snow chance"},
+		{"daily snow with cloudy hours", 75, 3, 3, 61, "Snow chance"},
+		{"hourly snow with cloudy daily", 3, 71, 85, 61, "Snow chance"},
+		{"rain turning to snow", 75, 61, 71, 3, "Rain / snow chance"},
+		{"snow turning to rain", 61, 71, 61, 3, "Rain / snow chance"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			f := fixture(now)
+			chance := 12.
+			f.Current.Temperature = 24 // 75 F now does not override later precipitation.
+			f.Daily[0].Code, f.Daily[0].RainChance = tc.daily, &chance
+			f.Daily[1].Code = tc.tomorrow
+			for i := range f.Hourly {
+				f.Hourly[i].Code = 3
+				if i >= 24 {
+					f.Hourly[i].Code = tc.tomorrow
+				}
+			}
+			f.Hourly[8].Code, f.Hourly[20].Code = tc.firstHour, tc.nextHour
+			cfg := DefaultSettings()
+			cfg.Background = "snow" // Visual previews must not change the label.
+			v := MakeView(cfg, &f, now, false, false)
+			if !v.Available || v.PrecipitationLabel != tc.want || v.Rain != "12%" {
+				t.Fatalf("got label %q, probability %q, available %v", v.PrecipitationLabel, v.Rain, v.Available)
+			}
+			f.Daily[0].RainChance = nil
+			v = MakeView(cfg, &f, now, false, false)
+			if v.Rain != "" || v.PrecipitationLabel != "" {
+				t.Fatal("missing probability must not appear as a chance", v)
+			}
+		})
+	}
+}
