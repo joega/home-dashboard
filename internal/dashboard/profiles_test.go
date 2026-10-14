@@ -141,3 +141,54 @@ func TestEntryAttributionCreditsCompleterAndKeepsCreator(t *testing.T) {
 		t.Fatal("deletion erased activity")
 	}
 }
+
+func TestProfileDataAndRecipeAttributionSurviveRestart(t *testing.T) {
+	s, path := testStore(t)
+	s.SavePerson(Person{Name: "Taylor"})
+	people, _ := s.People()
+	person := people[0]
+	s.savePersonCalendarMode(person.ID, "month")
+	recipe := testRecipe()
+	id, e := s.SaveRecipe(recipe)
+	if e != nil {
+		t.Fatal(e)
+	}
+	saved, _ := s.Recipe(id)
+	items := []RecipeShoppingItem{{Index: 0, Name: "Rice", Quantity: "2 cups"}}
+	if _, e = s.AddRecipeShoppingAs(id, saved.Version, strings.Repeat("a", 48), items, person, time.Now()); e != nil {
+		t.Fatal(e)
+	}
+	s.Close()
+	s, e = Open(path, false, "2026-10-14")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer s.Close()
+	mode, e := s.personCalendarMode(person.ID)
+	if e != nil || mode != "month" {
+		t.Fatal("personal preference lost", e)
+	}
+	shopping, e := s.List("shopping", "2026-10-14")
+	if e != nil || len(shopping) != 1 || shopping[0].CreatedByID != person.ID || shopping[0].CreatedBy != "Taylor" {
+		t.Fatal("recipe shopping attribution lost", e)
+	}
+}
+
+func TestRecurringCompletionIdentityIsScopedToItsDay(t *testing.T) {
+	s, _ := testStore(t)
+	s.SavePerson(Person{Name: "Alex"})
+	s.SavePerson(Person{Name: "Sam"})
+	people, _ := s.People()
+	alex, sam := people[0], people[1]
+	s.SaveAs(Entry{Kind: "chore", Title: "Dishes", Routine: "Evening", PersonID: alex.ID, Owner: alex.Name, Daily: true}, alex, time.Now())
+	rows, _ := s.List("chore", "2026-10-13")
+	id := rows[0].ID
+	s.SetDoneAs(id, "2026-10-13", true, time.Now(), sam)
+	s.SetDoneAs(id, "2026-10-14", true, time.Now(), alex)
+	first, _ := s.Get(id, "2026-10-13")
+	second, _ := s.Get(id, "2026-10-14")
+	next, _ := s.Get(id, "2026-10-15")
+	if first.CompletedByID != sam.ID || second.CompletedByID != alex.ID || next.CompletedByID != 0 {
+		t.Fatal("completion identity leaked across days")
+	}
+}

@@ -64,6 +64,8 @@ func Challenge(verifier string) string {
 }
 
 type Pending struct {
+	PersonID                                                             int64
+	LinkRevision                                                         string
 	StateHash, BrowserHash, Verifier, Redirect, ClientID, ConfigRevision string
 	Expires                                                              time.Time
 }

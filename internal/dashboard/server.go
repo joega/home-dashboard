@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,6 +30,11 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	SpotifyLinks                                                                                                       []SpotifyLink
+	SpotifyCards                                                                                                       []Page
+	SpotifyPerson                                                                                                      Person
+	SpotifyPersonID                                                                                                    int64
+	SpotifyPolling, SpotifyPending                                                                                     bool
 	CurrentPerson                                                                                                      Person
 	SpotifySearch                                                                                                      spotify.SearchResults
 	SpotifySearchDevice                                                                                                string
@@ -92,17 +98,20 @@ type Row struct {
 	ActorID      int64
 }
 type App struct {
-	spotify       *spotify.Service
-	spotifyClient *spotify.Client
-	media         *media.Service
-	recipeClient  *http.Client
-	weather       *weather.Service
-	sports        *sports.Service
-	store         *Store
-	loc           *time.Location
-	templates     *template.Template
-	handler       http.Handler
-	version       string
+	spotifyMu       sync.Mutex
+	spotifyProfiles map[int64]*spotify.Service
+	spotifyWake     chan struct{}
+	spotify         *spotify.Service
+	spotifyClient   *spotify.Client
+	media           *media.Service
+	recipeClient    *http.Client
+	weather         *weather.Service
+	sports          *sports.Service
+	store           *Store
+	loc             *time.Location
+	templates       *template.Template
+	handler         http.Handler
+	version         string
 }
 
 func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App, error) {
@@ -168,6 +177,8 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	a.media = media.NewService(store, mediaClient, media.LAN{Client: mediaClient})
 	a.spotifyClient = spotify.NewClient()
 	a.spotify = spotify.NewService(store, a.spotifyClient)
+	a.spotifyProfiles = map[int64]*spotify.Service{}
+	a.spotifyWake = make(chan struct{}, 1)
 	a.recipeClient = recipeHTTPClient()
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
@@ -367,7 +378,9 @@ func (a *App) load(p *Page, q url.Values) error {
 	}
 	if p.View == "media" || p.View == "settings" {
 		p.Media = a.media.View(p.Now)
-		p.Spotify = a.spotify.View(p.Now)
+		if err = a.loadSpotifyProfiles(p); err != nil {
+			return err
+		}
 		if !p.SpotifyDraft {
 			p.SpotifyConfig, err = a.store.SpotifyConfig()
 			if err != nil {
@@ -598,7 +611,10 @@ func (a *App) save(w http.ResponseWriter, r *http.Request) {
 	}
 	actor, actorErr := a.entryActor(r)
 	if actorErr != nil {
-		a.fail(w, actorErr)
+		p.Error = actorErr.Error()
+		w.Header().Set("HX-Retarget", "#drawer")
+		w.Header().Set("HX-Reswap", "innerHTML")
+		a.render(w, "form", p)
 		return
 	}
 	if err = a.store.SaveAs(e, actor, p.Now); err != nil {
@@ -631,7 +647,8 @@ func (a *App) complete(w http.ResponseWriter, r *http.Request) {
 	}
 	actor, actorErr := a.entryActor(r)
 	if actorErr != nil {
-		a.fail(w, actorErr)
+		p.Notice = actorErr.Error() + ". Nothing was changed."
+		a.changed(w, r, p)
 		return
 	}
 	if err = a.store.SetDoneAs(id, p.Today, done == "1", p.Now, actor); err != nil {

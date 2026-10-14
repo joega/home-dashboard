@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,8 @@ type RateError struct{ Delay time.Duration }
 func (e RateError) Error() string { return "Spotify rate limit reached; waiting before retrying" }
 
 type Client struct {
+	rateMu                sync.Mutex
+	rateUntil             time.Time
 	HTTP                  *http.Client
 	API, Token, Authorize string
 }
@@ -37,6 +40,15 @@ func (c *Client) AuthorizationURL(cfg Config, p Pending, state string) string {
 	return c.AuthURL(cfg, p) + "&state=" + url.QueryEscape(state)
 }
 func (c *Client) request(ctx context.Context, method, address, token, content string, body []byte, target any) error {
+	apiRequest := strings.HasPrefix(address, c.API+"/")
+	if apiRequest {
+		c.rateMu.Lock()
+		remaining := time.Until(c.rateUntil)
+		c.rateMu.Unlock()
+		if remaining > 0 {
+			return RateError{Delay: remaining}
+		}
+	}
 	req, e := http.NewRequestWithContext(ctx, method, address, bytes.NewReader(body))
 	if e != nil {
 		return errors.New("Invalid Spotify request")
@@ -61,7 +73,16 @@ func (c *Client) request(ctx context.Context, method, address, token, content st
 		return ErrNoPlayer
 	case 429:
 		n, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
-		return RateError{Delay: time.Duration(min(3600, max(30, n))) * time.Second}
+		delay := time.Duration(min(3600, max(30, n))) * time.Second
+		if apiRequest {
+			c.rateMu.Lock()
+			until := time.Now().Add(delay)
+			if until.After(c.rateUntil) {
+				c.rateUntil = until
+			}
+			c.rateMu.Unlock()
+		}
+		return RateError{Delay: delay}
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return errors.New("Spotify did not accept the request")

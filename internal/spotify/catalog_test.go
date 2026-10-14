@@ -164,3 +164,24 @@ func TestServiceSelectionAndVolumeGuards(t *testing.T) {
 		t.Fatal("restricted volume accepted")
 	}
 }
+
+func TestRateBackoffIsSharedAcrossAccountTokens(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("Retry-After", "60")
+		w.WriteHeader(429)
+	}))
+	defer server.Close()
+	c := NewClient()
+	c.API = server.URL
+	if _, e := c.Devices(context.Background(), Credential{AccessToken: "account-one"}); e == nil {
+		t.Fatal("rate limit missing")
+	}
+	if _, e := c.Playback(context.Background(), Credential{AccessToken: "account-two"}); e == nil {
+		t.Fatal("shared backoff missing")
+	}
+	if calls != 1 {
+		t.Fatal("second account ignored API backoff", calls)
+	}
+}

@@ -145,7 +145,7 @@ func (s *Store) Demo() bool {
 	return v == "true"
 }
 func (s *Store) List(kind, day string) ([]Entry, error) {
-	rows, err := s.db.Query("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,''),COALESCE(created_by,0),created_by_name,created_at,COALESCE(completed_by,0),completed_by_name,completed_at FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE kind=? ORDER BY CASE WHEN kind='event' AND start='' THEN 1 ELSE 0 END,start,entries.id", day, kind)
+	rows, err := s.db.Query("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,''),COALESCE(created_by,0),created_by_name,created_at,CASE WHEN daily=1 AND kind='chore' THEN COALESCE((SELECT person_id FROM chore_history h WHERE h.entry_key=entries.entry_key AND h.cycle=?),0) ELSE COALESCE(completed_by,0) END,CASE WHEN daily=1 AND kind='chore' THEN COALESCE((SELECT person_name FROM chore_history h WHERE h.entry_key=entries.entry_key AND h.cycle=?),'') ELSE completed_by_name END,CASE WHEN daily=1 AND kind='chore' THEN COALESCE((SELECT completed_at FROM chore_history h WHERE h.entry_key=entries.entry_key AND h.cycle=?),'') ELSE completed_at END FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE kind=? ORDER BY CASE WHEN kind='event' AND start='' THEN 1 ELSE 0 END,start,entries.id", day, day, day, day, kind)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (s *Store) List(kind, day string) ([]Entry, error) {
 }
 func (s *Store) Get(id int64, day string) (Entry, error) {
 	var e Entry
-	err := s.db.QueryRow("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,''),COALESCE(created_by,0),created_by_name,created_at,COALESCE(completed_by,0),completed_by_name,completed_at FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE entries.id=?", day, id).Scan(&e.ID, &e.Kind, &e.Title, &e.Owner, &e.Routine, &e.Quantity, &e.Date, &e.Start, &e.End, &e.Daily, &e.Done, &e.PersonID, &e.HasPhoto, &e.Repeat, &e.RepeatEvery, &e.RepeatDays, &e.RepeatUntil, &e.Location, &e.ShopID, &e.ShopName, &e.CreatedByID, &e.CreatedBy, &e.CreatedAt, &e.CompletedByID, &e.CompletedBy, &e.CompletedAt)
+	err := s.db.QueryRow("SELECT entries.id,kind,title,COALESCE(people.name,owner),routine,quantity,date,start,end,daily,CASE WHEN daily=1 THEN EXISTS(SELECT 1 FROM completions c WHERE c.entry_id=entries.id AND c.day=?) ELSE done END,COALESCE(person_id,0),COALESCE(length(people.photo),0)>0,repeat,repeat_every,repeat_days,repeat_until,location,COALESCE(shop_id,0),COALESCE(shopping_stores.name,''),COALESCE(created_by,0),created_by_name,created_at,CASE WHEN daily=1 AND kind='chore' THEN COALESCE((SELECT person_id FROM chore_history h WHERE h.entry_key=entries.entry_key AND h.cycle=?),0) ELSE COALESCE(completed_by,0) END,CASE WHEN daily=1 AND kind='chore' THEN COALESCE((SELECT person_name FROM chore_history h WHERE h.entry_key=entries.entry_key AND h.cycle=?),'') ELSE completed_by_name END,CASE WHEN daily=1 AND kind='chore' THEN COALESCE((SELECT completed_at FROM chore_history h WHERE h.entry_key=entries.entry_key AND h.cycle=?),'') ELSE completed_at END FROM entries LEFT JOIN people ON people.id=entries.person_id LEFT JOIN shopping_stores ON shopping_stores.id=entries.shop_id WHERE entries.id=?", day, day, day, day, id).Scan(&e.ID, &e.Kind, &e.Title, &e.Owner, &e.Routine, &e.Quantity, &e.Date, &e.Start, &e.End, &e.Daily, &e.Done, &e.PersonID, &e.HasPhoto, &e.Repeat, &e.RepeatEvery, &e.RepeatDays, &e.RepeatUntil, &e.Location, &e.ShopID, &e.ShopName, &e.CreatedByID, &e.CreatedBy, &e.CreatedAt, &e.CompletedByID, &e.CompletedBy, &e.CompletedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = ErrMissing
 	}
@@ -333,6 +333,9 @@ func (s *Store) ClearDemo() error {
 	tx.QueryRow("SELECT value FROM settings WHERE key='demo'").Scan(&v)
 	if v != "true" {
 		return errors.New("example mode is already off")
+	}
+	if _, err = tx.Exec("DELETE FROM entry_activity"); err != nil {
+		return err
 	}
 	if _, err = tx.Exec("DELETE FROM chore_history"); err != nil {
 		return err

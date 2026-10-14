@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // A household profile is a convenient identity, not an authentication boundary.
@@ -107,6 +108,9 @@ func safeProfileReturn(value string) string {
 	if e != nil || u.IsAbs() || u.Host != "" || u.Fragment != "" {
 		return "/"
 	}
+	if strings.HasPrefix(u.Path, "/cookbook/") {
+		return u.RequestURI()
+	}
 	switch u.Path {
 	case "/", "/calendar", "/chores", "/shopping", "/sports", "/media", "/settings", "/cookbook":
 		return u.RequestURI()
@@ -115,7 +119,12 @@ func safeProfileReturn(value string) string {
 }
 func (a *App) currentPersonForm(w http.ResponseWriter, r *http.Request) {
 	p := a.base(w, r)
-	p.People, _ = a.store.People()
+	var e error
+	p.People, e = a.store.People()
+	if e != nil {
+		a.fail(w, e)
+		return
+	}
 	p.Return = safeProfileReturn(r.Header.Get("HX-Current-URL"))
 	if u, e := url.Parse(r.Header.Get("HX-Current-URL")); e == nil {
 		p.Return = safeProfileReturn(u.RequestURI())

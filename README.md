@@ -47,14 +47,44 @@ SQLite defaults to `data/dashboard.sqlite`; entries, people, photos and completi
 - Weather foundation: one server-owned Open-Meteo request fetches current weather and seven days of hourly/daily forecasts, cached in SQLite. Successful forecasts refresh every 15 minutes; failures back off from one to 15 minutes and preserve usable cached data. Failed/late updates are labeled stale; current weather expires after two hours and falls back to an unavailable widget and neutral scene. Invalid data cannot replace the last good cache; ZIP changes isolate caches and discard late old-location writes. Page views do not fetch weather, and fresh cached forecasts survive server restarts. Inline weather settings pause periodic page refresh so edits are preserved.
 - Cookbook: your own household collection comes first, with manual entry for paper recipes, optional JPG/PNG photos, notes and favorites featured ahead of other recipes. Search by title, ingredient or tag; filter by meal, tag, maximum time, favorites or archived recipes. URL and Schema.org Recipe JSON-LD imports open an editable review before saving. Explore provides secondary TheMealDB discovery; save and adapt discoveries into your own book. Cooking mode offers larger ingredients and step checklists with progress remembered in each browser; Finish records last-cooked time and clears that browser's checks. Select missing ingredients for Shopping, review names and quantities, and choose stores before transferring. Matching pending items are skipped. Archive/restore and portable JSON-LD export are included. Pick dinner chooses randomly from the current filters' saved, active Dinner recipes. The native kiosk pauses touch-inactivity dimming during cooking; the night brightness schedule still applies.
 - Sports: schedules and results for any cataloged MLB, NHL, NBA, NFL, MLS or Premier League team. Settings → Sports searches by name/city/abbreviation, filters by league and saves up to 24 followed teams. The first six get horizontal shortcuts; additional teams stay available through More teams and All teams. Upcoming and Recent results show the next/last listed game across season breaks, home/away opponents, start times, final W/L/D results, venue and provider-supplied broadcasts. Unknown times are labeled TBD and missing scores stay missing. A compact Today summary shows up to two games with the total count. Schedules and PNG logos are cached on the server; there is no ticker.
-- Media: local Sony BRAVIA, Samsung TV and Google Cast discovery with distinct network availability, native power and app-reported playback. Add, rename or hide devices in Settings → Media. Optional Sony pre-shared-key or Samsung on-TV approval unlocks only play, pause, volume and mute. Samsung Frame Art Mode is checked after pairing where supported. No Home Assistant is required. Spotify account connection adds now-playing artwork, progress, available Connect devices, song/album search and bounded music controls. Device restrictions and unavailable volume controls are shown explicitly.
+- Media: local Sony BRAVIA, Samsung TV and Google Cast discovery with distinct network availability, native power and app-reported playback. Add, rename or hide devices in Settings → Media. Optional Sony pre-shared-key or Samsung on-TV approval unlocks only play, pause, volume and mute. Samsung Frame Art Mode is checked after pairing where supported. No Home Assistant is required. Per-person Spotify connections add independent player cards with now-playing artwork, progress, available Connect devices, song/album search and bounded music controls. Device restrictions and unavailable volume controls are shown explicitly.
 - Fonts, scripts, sky scenes and weather data are served to the frame from the dashboard origin. The server contacts Open-Meteo for weather and changed-ZIP resolution; the frame needs no external network access. Source adaptation notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Calendar-provider synchronization, weather on calendar events and animation are deferred. Container packaging is prepared for review; final deployment remains separate. Data is local to this server; this first version has no authentication and should stay on a trusted private network. The frame's restricted network policy does not protect other clients accessing this server.
 
 Monthly/yearly rules use the last day of a shorter month when the start day does not exist (for example, January 31 → February 28). Selected-day intervals use Monday-based weeks anchored to the start date. Recurrences retain local wall-clock times; an occurrence at a nonexistent daylight-saving time is skipped. Start and end dates are inclusive. Existing daily chores are migrated without changing their completion history.
 
+## Household profiles
+
+Use the person/avatar button in the top bar to choose the **current person**, or
+Household for shared use. Selection is remembered separately on each browser or
+frame. Profiles are a convenience, not login accounts or access restrictions.
+All household data and authorized media controls remain shared.
+
+New events and chores default to the current person; existing assignments stay
+as they are when edited. Their calendar view preference is saved on the server
+and follows them when selected on another device. Weather, display schedules,
+stores and other household settings remain shared.
+
+Shopping items show who added them or picked them up. Entry creation, edits,
+completion and reopening record a stable person ID, name/title snapshot and UTC
+time in SQLite; recipe-to-shopping batches also record their author. Chore
+completion credit belongs to whoever checks the chore off, while the assignee is
+stored separately. Repeated submissions do not duplicate credit, and unchecking
+removes that cycle’s credit. Household mode leaves new credit unclaimed. Earlier
+rows keep their original data; unknown authors are not guessed retroactively.
+
+Settings → Media lists a Spotify connection for each person. Connect each account
+from the configured loopback browser address, using the documented SSH tunnel on
+the server. After updating from the single-account version, use **Link existing
+connection** to attach the saved account to its owner without logging in again.
+Media shows one independent card per connected person and puts the current
+person’s card first. Disconnecting one account does not disconnect anyone else.
+Archiving a person hides their player and pauses polling while preserving data.
+
 ## Roadmap
+
+- Personal chore charts and completion streaks using the activity records; possible games with per-person scores later.
 
 ### Weather
 
@@ -133,15 +163,17 @@ the +/- buttons remain available. These features use the existing Spotify approv
 
 Spotify currently requires Premium for development-mode app owners and supports up
 to five allowlisted authenticated accounts per app. Each public-repo adopter uses
-their own developer app; Home HQ does not ship a shared Client ID. This first version
-connects one account per household, not every Family member's separate session.
+their own developer app; Home HQ does not ship a shared Client ID. Link separate Family accounts to separate people. Each person must approve their
+own connection and be allowlisted in your Spotify developer app. The app's account
+limit still applies; connecting several people does not bypass Spotify's limits.
 [Spotify quota documentation](https://developer.spotify.com/documentation/web-api/concepts/quota-modes).
 
-The server checks playback about every 15 seconds and device availability about
+The server checks each connected person’s playback about every 15 seconds and device availability about
 every minute. Media refreshes about every 15 seconds while visible and unedited.
 Automatic token refresh survives app/container restarts. Failures preserve labeled
 cached information but disable controls; `Retry-After` backoff is honored on rate
-limits. Page views do not make Spotify API requests. Connection and polling never
+limits. A Spotify API rate-limit response also pauses requests from other accounts
+using the same developer app. Page views do not make Spotify API requests. Connection and polling never
 start, pause, transfer or change music. Explicit controls support play/pause,
 previous/next, relative volume steps and a reviewed device transfer; transfer does
 not automatically resume paused playback. Restricted devices and unsupported
@@ -153,7 +185,7 @@ Access/refresh tokens and pending login verifiers are stored in the private SQLi
 connection table, excluded from HTML, browser storage and Git. They are included
 in private database backups. Disconnect removes local tokens/pending logins and
 leaves playback alone; remove Home HQ from your Spotify account's Apps page too if
-you want to revoke its grant. A changed Client ID clears its old connection.
+you want to revoke its grant. A changed Client ID clears all connections for that old app.
 
 The laptop preview and production server have separate databases and connections.
 Test on the laptop first, then connect once on the server after deploying; do not
