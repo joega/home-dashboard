@@ -93,17 +93,59 @@
     var start=form.querySelector("[data-chore-start]");if(start)start.required=!!value;
   }
   document.addEventListener("change",function(event){if(event.target.matches("[data-repeat]"))configureSchedule();});
-  function scrollSectionNav() {
+  var boundMenus = new WeakSet(), menuPositions = new Map();
+  function menuKey(track) {
+    var current = track.querySelector('[aria-current]');
+    var overflow = track.closest('.sports-team-row');
+    var more = overflow && overflow.querySelector('select[name=team]');
+    return track.id + ':' + Array.from(track.querySelectorAll('a')).map(function(a) {return a.getAttribute('href');}).join('|') + ':' + (current ? current.getAttribute('href') : more ? more.value : '');
+  }
+  function menuCues(shell) {
+    var track = shell.querySelector('[data-menu-track]');
+    var back = shell.querySelector('[data-menu-step="back"]'), next = shell.querySelector('[data-menu-step="next"]');
+    // Buttons share the row, so settle their visibility after they resize the
+    // track. Never reserve space when every item already fits.
+    for (var pass = 0; pass < 2; pass++) {
+      back.hidden = track.scrollLeft <= 2;
+      next.hidden = track.scrollWidth - track.clientWidth - track.scrollLeft <= 2;
+    }
+  }
+  function configureMenuScroll() {
+    document.querySelectorAll('[data-scroll-menu]').forEach(function(shell) {
+      if (!boundMenus.has(shell)) {
+        boundMenus.add(shell);
+        var track = shell.querySelector('[data-menu-track]'), key = menuKey(track);
+        menuCues(shell);
+        if (menuPositions.has(key)) track.scrollLeft = menuPositions.get(key);
+        track.addEventListener('scroll',function() {
+          menuCues(shell);
+          if (!menuPositions.has(key) && menuPositions.size >= 64) menuPositions.delete(menuPositions.keys().next().value);
+          menuPositions.set(key,track.scrollLeft);
+        },{passive:true});
+      }
+      menuCues(shell);
+    });
+  }
+  function layoutMenus(event) {
+    var force = event && event.type === "resize";
+    for (var pass = 0; pass < 2; pass++) {
+      configureMenuScroll();
+      scrollSectionNav(force);
+      scrollStoreFilters(force);
+    }
+    configureMenuScroll();
+  }
+  function scrollSectionNav(force) {
     var nav=document.querySelector('.topbar nav'), selected=nav && nav.querySelector('[aria-current]');
-    if(!selected)return;
+    if(!selected || (!force && menuPositions.has(menuKey(nav))))return;
     var box=nav.getBoundingClientRect(), item=selected.getBoundingClientRect();
     if(item.right>box.right)nav.scrollLeft+=item.right-box.right;
     else if(item.left<box.left)nav.scrollLeft-=box.left-item.left;
   }
-  window.addEventListener("resize", scrollSectionNav);
-  function scrollStoreFilters() {
+  window.addEventListener("resize", layoutMenus);
+  function scrollStoreFilters(force) {
     document.querySelectorAll(".store-filters,.sports-team-filters").forEach(function(filters) {
-      var selected=filters.querySelector("[aria-current]");if(!selected)return;
+      var selected=filters.querySelector("[aria-current]");if(!selected || (!force && filters.hasAttribute("data-menu-track") && menuPositions.has(menuKey(filters))))return;
       var box=filters.getBoundingClientRect(), selectedBox=selected.getBoundingClientRect();
       if(selectedBox.right>box.right)filters.scrollLeft+=selectedBox.right-box.right;
       else if(selectedBox.left<box.left)filters.scrollLeft-=box.left-selectedBox.left;
@@ -155,8 +197,7 @@
     clock();
     configureCalendar();
     configureSchedule();
-    scrollStoreFilters();
-    scrollSectionNav();
+    layoutMenus();
     var dialog = document.querySelector(".sheet");
     document.body.classList.toggle("sheet-open", !!dialog);
     if (dialog && dialog !== currentDialog) {
@@ -172,6 +213,13 @@
   }
   document.addEventListener("click", function (event) {
     if (performance.now() < suppressClick) {event.preventDefault();event.stopPropagation();return;}
+    var step = event.target.closest('[data-menu-step]');
+    if (step) {
+      var track = step.closest('[data-scroll-menu]').querySelector('[data-menu-track]');
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      track.scrollBy({left:(step.dataset.menuStep === 'back' ? -1 : 1) * Math.max(100,track.clientWidth * .75),behavior:reduceMotion ? 'auto' : 'smooth'});
+      return;
+    }
     var jump = event.target.closest("[data-hour]");
     if (jump && timeline) {
       var targetTop = Number(jump.dataset.hour) * 72;
@@ -234,9 +282,8 @@
   document.addEventListener("htmx:sendError", function () {var connection=document.getElementById("connection"); if(connection) connection.hidden = false;});
   document.addEventListener("htmx:responseError", function () {var connection=document.getElementById("connection"); if(connection) connection.hidden = false;});
   document.addEventListener("DOMContentLoaded", update);
-  window.addEventListener("load", scrollStoreFilters);
-  window.addEventListener("resize", scrollStoreFilters);
-  if(document.fonts && document.fonts.ready)document.fonts.ready.then(scrollStoreFilters);
+  window.addEventListener("load", layoutMenus);
+  if(document.fonts && document.fonts.ready)document.fonts.ready.then(layoutMenus);
   setInterval(tick, 1000);
   setInterval(function () {
     if (document.hidden || document.querySelector(".sheet,[data-pause-refresh],.cookbook-page") || document.querySelector(".htmx-request") || !window.htmx) return;

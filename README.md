@@ -119,7 +119,11 @@ Premier League catalogs. Settings → Sports includes instant local search and a
 league filter. Check a result to follow it, uncheck a followed team to remove it,
 then Save sports settings. Search changes preserve unsaved selections. Follow up
 to 24 teams; the first six in the saved selection order appear as shortcuts, with
-More teams for additional selections. All teams includes every followed team.
+a compact More dropdown at the right end of the team row for additional
+selections. All teams includes every followed team. Scroll chevrons appear only
+when team shortcuts or main app sections are off-screen; they reveal those items
+without changing the selected page, and disappear when everything fits. Scrolled
+positions survive ordinary data refreshes for the same menu selection.
 The existing five Boston selections, stable keys and cached schedules survive
 this upgrade. The initial Boston preset remains editable for other households.
 The Today strip is labeled Sports today and follows the saved selection.
@@ -278,3 +282,8 @@ six team shortcuts plus All teams, overflow selection across Upcoming/Recent
 results, and no horizontal page overflow. Read-only live feeds were validated
 for the Yankees, Sharks, Lakers, Cowboys, Atlanta United and Liverpool. This
 expansion has not yet been checked on the physical kitchen frame.
+
+Menu overflow controls were checked at 1280×800, 1024×600 and 390×844: the
+Sports More dropdown stays at the row’s right edge, scroll chevrons reveal
+clipped items in both menus, fitting menus hide their chevrons, and scroll
+positions persist through the normal 30-second data refresh without navigation.

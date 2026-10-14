@@ -28,14 +28,14 @@
 <div id="drawer"></div><div class="connection" id="connection" role="status" hidden>Can’t reach Home HQ. Check your connection, then reload. <button type="button" data-reload>Try again</button></div>
 </body></html>{{end}}
 {{define "nav"}}<header id="navigation" class="topbar" hx-swap-oob="true">
-<nav aria-label="Sections" hx-boost="true" hx-target="#content" hx-swap="innerHTML">
+<div class="nav-scroll-shell" data-scroll-menu><button type="button" class="menu-scroll-button" data-menu-step="back" aria-label="Show previous sections" aria-controls="sections-track" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><nav id="sections-track" data-menu-track aria-label="Sections" hx-boost="true" hx-target="#content" hx-swap="innerHTML">
 <a href="/" class="nav-item {{if eq .View "today"}}selected{{end}}" {{if eq .View "today"}}aria-current="page"{{end}}>Today</a>
 <a href="/calendar" class="nav-item {{if eq .View "calendar"}}selected{{end}}" {{if eq .View "calendar"}}aria-current="page"{{end}}>Calendar</a>
 <a href="/chores" class="nav-item {{if eq .View "chores"}}selected{{end}}" {{if eq .View "chores"}}aria-current="page"{{end}}>Chores</a>
 <a href="/shopping" class="nav-item {{if eq .View "shopping"}}selected{{end}}" {{if eq .View "shopping"}}aria-current="page"{{end}}>Shopping</a>
 <a href="/sports" class="nav-item {{if eq .View "sports"}}selected{{end}}" {{if eq .View "sports"}}aria-current="page"{{end}}>Sports</a>
 <a href="/cookbook" class="nav-item {{if eq .View "cookbook"}}selected{{end}}" {{if eq .View "cookbook"}}aria-current="page"{{end}}>Cookbook</a>
-</nav>
+</nav><button type="button" class="menu-scroll-button" data-menu-step="next" aria-label="Show more sections" aria-controls="sections-track" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div>
 <div class="topbar-tools">{{template "clock" .}}<a href="/settings" aria-label="Settings" title="Settings" class="settings-button {{if eq .View "settings"}}selected{{end}}" {{if eq .View "settings"}}aria-current="page"{{end}} hx-boost="true" hx-target="#content"><svg><use href="#i-settings"/></svg></a></div>
 </header>{{end}}
 {{define "fragment"}}{{template "content" .}}{{template "nav" .}}<div id="drawer" hx-swap-oob="true"></div>{{end}}
