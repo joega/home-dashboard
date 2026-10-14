@@ -298,3 +298,22 @@ body .weather-card.weather-atmospheric .weather-source .weather-stale{color:#ffe
 .calendar-app[data-mode=day] .timeline-event.short .calendar-owner-badge .avatar,.calendar-app[data-mode=day] .timeline-event.short .calendar-owner-badge .avatar img{width:18px;height:18px}
 .calendar-app[data-mode=day] .timeline-event.short .calendar-owner-badge .avatar{flex-basis:18px}
 .calendar-app[data-mode=day] .timeline-event.short small{font-size:10px;line-height:12px}
+
+/* Album art anchors the left side; all playback controls stay together. */
+.spotify-player-body{display:grid;grid-template-columns:minmax(220px,380px) minmax(0,1fr);align-items:start;gap:24px}
+.spotify-player-body .spotify-artwork{width:100%;height:auto;aspect-ratio:1;max-width:380px;border-radius:9px;font-size:90px;margin:0}
+.spotify-track .spotify-controls{flex-wrap:wrap;gap:8px;margin-top:14px}
+.spotify-track .spotify-control-gap{display:none}
+.spotify-track .spotify-device-form{margin-top:16px;padding-top:14px;gap:10px}
+.spotify-track .spotify-device-form label{width:100%;min-width:0;gap:10px}
+.spotify-track .spotify-device-form select{flex:1;min-width:0;max-width:none;width:auto}
+.spotify-track .spotify-device-form small{flex-basis:100%;max-width:none}
+.spotify-playback-label{display:inline-flex;align-items:center;gap:7px;padding:4px 9px;border-radius:14px;background:rgba(36,43,39,.07);font-size:11px;font-weight:600;line-height:1.3;margin-bottom:8px}
+.spotify-player[data-playback=playing] .spotify-playback-label{color:#23613e;background:rgba(37,125,71,.12)}
+.spotify-player[data-playback=playing] .spotify-playback-label:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(37,125,71,.1)}
+body[data-theme=dark] .spotify-playback-label{background:rgba(224,238,246,.07)}
+body[data-theme=dark] .spotify-player[data-playback=playing] .spotify-playback-label{color:#a2d4b6;background:rgba(121,187,146,.13)}
+@media(max-width:800px) and (min-width:601px){.spotify-player-body{grid-template-columns:minmax(200px,.85fr) minmax(0,1.15fr);gap:18px}.spotify-heading{flex-wrap:wrap}.spotify-heading-actions{margin-left:auto}.spotify-volume-slider input{width:100px}}
+@media(max-width:600px){.spotify-player-body{grid-template-columns:minmax(0,1fr);gap:20px}.spotify-player-body .spotify-artwork{max-width:280px;margin:0 auto}.spotify-track .spotify-device-form select{width:100%}.spotify-track .spotify-controls{gap:7px}.spotify-track .spotify-volume-slider input{width:110px}}
+
+@media(min-width:801px) and (max-width:1100px){.spotify-player-body{grid-template-columns:minmax(220px,320px) minmax(0,1fr);gap:20px}.spotify-track .spotify-controls{margin-top:10px}.spotify-track .spotify-device-form{margin-top:12px;padding-top:10px}}
