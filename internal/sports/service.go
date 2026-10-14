@@ -60,10 +60,7 @@ func (s *Service) States(c Settings, now time.Time) []TeamState {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	states := []TeamState{}
-	for _, t := range teams {
-		if !c.Has(t.Key) {
-			continue
-		}
+	for _, t := range c.Selected() {
 		entry := s.slots[t.Key]
 		state := TeamState{Team: t, Ready: entry.loaded}
 		if entry.snapshot == nil {
@@ -88,12 +85,9 @@ func (s *Service) Refresh(ctx context.Context, now time.Time) {
 		log.Print("sports settings: ", err)
 		return
 	}
-	for _, t := range teams {
+	for _, t := range cfg.Selected() {
 		if ctx.Err() != nil {
 			return
-		}
-		if !cfg.Has(t.Key) {
-			continue
 		}
 		s.mu.RLock()
 		entry := s.slots[t.Key]

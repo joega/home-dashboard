@@ -8,26 +8,10 @@ import (
 	"time"
 )
 
-// This dashboard follows one household's five teams, not a whole-league ticker.
+// Team identities and request routes are fixed by the reviewed bundled catalog.
 type Team struct{ Key, Name, FullName, League, ProviderID, Route, Logo, Abbr string }
 
-var teams = []Team{
-	{"red-sox", "Red Sox", "Boston Red Sox", "MLB", "111", "", "https://a.espncdn.com/i/teamlogos/mlb/500/bos.png", "BOS"},
-	{"bruins", "Bruins", "Boston Bruins", "NHL", "6", "", "https://a.espncdn.com/i/teamlogos/nhl/500/bos.png", "BOS"},
-	{"patriots", "Patriots", "New England Patriots", "NFL", "17", "football/nfl", "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png", "NE"},
-	{"celtics", "Celtics", "Boston Celtics", "NBA", "2", "basketball/nba", "https://a.espncdn.com/i/teamlogos/nba/500/bos.png", "BOS"},
-	{"revolution", "Revolution", "New England Revolution", "MLS", "189", "soccer/usa.1", "https://a.espncdn.com/i/teamlogos/soccer/500/189.png", "NE"},
-}
-
-func Teams() []Team { return append([]Team(nil), teams...) }
-func Find(key string) (Team, bool) {
-	for _, t := range teams {
-		if t.Key == key {
-			return t, true
-		}
-	}
-	return Team{}, false
-}
+const MaxFollowedTeams = 24
 
 type Settings struct {
 	Teams []string
@@ -35,11 +19,7 @@ type Settings struct {
 }
 
 func Defaults() Settings {
-	c := Settings{Today: true}
-	for _, t := range teams {
-		c.Teams = append(c.Teams, t.Key)
-	}
-	return c
+	return Settings{Teams: []string{"red-sox", "bruins", "patriots", "celtics", "revolution"}, Today: true}
 }
 func (c Settings) Has(key string) bool {
 	for _, k := range c.Teams {
@@ -50,8 +30,8 @@ func (c Settings) Has(key string) bool {
 	return false
 }
 func (c Settings) Validate() error {
-	if len(c.Teams) > len(teams) {
-		return errors.New("Choose only the five household teams.")
+	if len(c.Teams) > MaxFollowedTeams {
+		return fmt.Errorf("Follow up to %d teams.", MaxFollowedTeams)
 	}
 	seen := map[string]bool{}
 	for _, key := range c.Teams {
@@ -326,7 +306,7 @@ func MakeView(states []TeamState, cfg Settings, filter, mode string, now time.Ti
 		v.Empty = "No recent results are listed for these teams."
 	}
 	if len(picked) == 0 && loading {
-		v.Empty = "Loading Boston schedules…"
+		v.Empty = "Loading schedules…"
 	} else if len(picked) == 0 && unavailable {
 		v.Empty = "No games to show from the available schedules."
 	}

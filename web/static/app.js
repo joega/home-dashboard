@@ -110,8 +110,44 @@
     });
   }
 
+  function configureSportsPicker() {
+    var picker = document.querySelector('[data-sports-picker]');
+    if (!picker) return;
+    var selected = picker.querySelector('[data-team-selected]'), results = picker.querySelector('[data-team-results]');
+    var query = picker.querySelector('[data-team-search]').value.trim().toLowerCase();
+    var league = picker.querySelector('[data-team-league]').value;
+    var rows = Array.from(picker.querySelectorAll('[data-team-choice]'));
+    // Move controls, rather than duplicate them: a search never loses checked
+    // selections, and Save submits the chosen shortcut order exactly once.
+    rows.forEach(function(row) {
+      var box = row.querySelector('input');
+      if (box.checked && row.parentElement !== selected) selected.appendChild(row);
+      else if (!box.checked && row.parentElement !== results) results.appendChild(row);
+    });
+    var count = selected.children.length, found = 0, searching = query.length >= 2 || !!league;
+    Array.from(results.children).sort(function(a,b) {return a.dataset.teamName.localeCompare(b.dataset.teamName);}).forEach(function(row) {results.appendChild(row);});
+    rows.forEach(function(row) {
+      var box = row.querySelector('input');
+      var match = searching && (!league || row.dataset.teamLeagueName === league) && query.split(/\s+/).every(function(word) {return row.dataset.teamName.toLowerCase().indexOf(word) >= 0;});
+      row.hidden = !box.checked && !match;
+      box.disabled = !box.checked && count >= 24;
+      if (!box.checked && match) found++;
+    });
+    picker.querySelector('[data-team-count]').textContent = count;
+    picker.querySelector('[data-team-empty]').hidden = count > 0;
+    picker.querySelector('[data-team-results-heading]').hidden = !found;
+    picker.querySelector('[data-team-search-status]').textContent = count >= 24 ? 'You’re following 24 teams. Remove one to add another.' : !searching ? 'Search for a team or choose a league to browse.' : found ? found + (found === 1 ? ' team available. Select it, then save.' : ' teams available. Select one, then save.') : 'No more matching teams. Try another name or league.';
+  }
+  document.addEventListener('input', function(event) {
+    if (event.target.matches('[data-team-search]')) configureSportsPicker();
+  });
+  document.addEventListener('change', function(event) {
+    if (event.target.matches('[data-team-league],[data-sports-picker] input[name=teams]')) configureSportsPicker();
+  });
+
   function update() {
     recipeProgress();
+    configureSportsPicker();
     // Swap markers belong to response fragments, not cached history snapshots.
     document.querySelectorAll("[hx-swap-oob]").forEach(function (element) {element.removeAttribute("hx-swap-oob");});
     var weatherState=document.getElementById("weather-scene-state");
@@ -180,7 +216,7 @@
   document.addEventListener("htmx:beforeRequest", function (event) {
     var scroller = document.querySelector(".list-scroll");
     var trigger = event.detail.elt;
-    var sportsNavigation = trigger && trigger.closest(".sports-team-filters,.sports-modes");
+    var sportsNavigation = trigger && trigger.closest(".sports-team-filters,.sports-modes,.sports-overflow");
     scrollTop = sportsNavigation ? 0 : (scroller ? scroller.scrollTop : 0);
   });
   document.addEventListener("appearance",function(event){var theme=event.detail.theme;if(theme==="light"||theme==="dark"){document.body.dataset.theme=theme;var state=document.getElementById("weather-scene-state");if(state)state.dataset.theme=theme;}});

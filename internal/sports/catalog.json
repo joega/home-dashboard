@@ -1,0 +1,1745 @@
+{
+  "updated": "2026-10-14",
+  "teams": [
+    {
+      "Key": "epl-349",
+      "Name": "Bournemouth",
+      "FullName": "AFC Bournemouth",
+      "League": "EPL",
+      "ProviderID": "349",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/349.png",
+      "Abbr": "BOU"
+    },
+    {
+      "Key": "nhl-24",
+      "Name": "Ducks",
+      "FullName": "Anaheim Ducks",
+      "League": "NHL",
+      "ProviderID": "24",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/ana.png",
+      "Abbr": "ANA"
+    },
+    {
+      "Key": "nfl-22",
+      "Name": "Cardinals",
+      "FullName": "Arizona Cardinals",
+      "League": "NFL",
+      "ProviderID": "22",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png",
+      "Abbr": "ARI"
+    },
+    {
+      "Key": "mlb-109",
+      "Name": "Diamondbacks",
+      "FullName": "Arizona Diamondbacks",
+      "League": "MLB",
+      "ProviderID": "109",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/ari.png",
+      "Abbr": "ARI"
+    },
+    {
+      "Key": "epl-359",
+      "Name": "Arsenal",
+      "FullName": "Arsenal",
+      "League": "EPL",
+      "ProviderID": "359",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/359.png",
+      "Abbr": "ARS"
+    },
+    {
+      "Key": "epl-362",
+      "Name": "Aston Villa",
+      "FullName": "Aston Villa",
+      "League": "EPL",
+      "ProviderID": "362",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/362.png",
+      "Abbr": "AVL"
+    },
+    {
+      "Key": "mlb-133",
+      "Name": "Athletics",
+      "FullName": "Athletics",
+      "League": "MLB",
+      "ProviderID": "133",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/ath.png",
+      "Abbr": "ATH"
+    },
+    {
+      "Key": "mlb-144",
+      "Name": "Braves",
+      "FullName": "Atlanta Braves",
+      "League": "MLB",
+      "ProviderID": "144",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/atl.png",
+      "Abbr": "ATL"
+    },
+    {
+      "Key": "nfl-1",
+      "Name": "Falcons",
+      "FullName": "Atlanta Falcons",
+      "League": "NFL",
+      "ProviderID": "1",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png",
+      "Abbr": "ATL"
+    },
+    {
+      "Key": "nba-1",
+      "Name": "Hawks",
+      "FullName": "Atlanta Hawks",
+      "League": "NBA",
+      "ProviderID": "1",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/atl.png",
+      "Abbr": "ATL"
+    },
+    {
+      "Key": "mls-18418",
+      "Name": "Atlanta",
+      "FullName": "Atlanta United FC",
+      "League": "MLS",
+      "ProviderID": "18418",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/18418.png",
+      "Abbr": "ATL"
+    },
+    {
+      "Key": "mls-20906",
+      "Name": "Austin",
+      "FullName": "Austin FC",
+      "League": "MLS",
+      "ProviderID": "20906",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/20906.png",
+      "Abbr": "ATX"
+    },
+    {
+      "Key": "mlb-110",
+      "Name": "Orioles",
+      "FullName": "Baltimore Orioles",
+      "League": "MLB",
+      "ProviderID": "110",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/bal.png",
+      "Abbr": "BAL"
+    },
+    {
+      "Key": "nfl-33",
+      "Name": "Ravens",
+      "FullName": "Baltimore Ravens",
+      "League": "NFL",
+      "ProviderID": "33",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+      "Abbr": "BAL"
+    },
+    {
+      "Key": "bruins",
+      "Name": "Bruins",
+      "FullName": "Boston Bruins",
+      "League": "NHL",
+      "ProviderID": "6",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/bos.png",
+      "Abbr": "BOS"
+    },
+    {
+      "Key": "celtics",
+      "Name": "Celtics",
+      "FullName": "Boston Celtics",
+      "League": "NBA",
+      "ProviderID": "2",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+      "Abbr": "BOS"
+    },
+    {
+      "Key": "red-sox",
+      "Name": "Red Sox",
+      "FullName": "Boston Red Sox",
+      "League": "MLB",
+      "ProviderID": "111",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/bos.png",
+      "Abbr": "BOS"
+    },
+    {
+      "Key": "epl-337",
+      "Name": "Brentford",
+      "FullName": "Brentford",
+      "League": "EPL",
+      "ProviderID": "337",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/337.png",
+      "Abbr": "BRE"
+    },
+    {
+      "Key": "epl-331",
+      "Name": "Brighton",
+      "FullName": "Brighton & Hove Albion",
+      "League": "EPL",
+      "ProviderID": "331",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/331.png",
+      "Abbr": "BHA"
+    },
+    {
+      "Key": "nba-17",
+      "Name": "Nets",
+      "FullName": "Brooklyn Nets",
+      "League": "NBA",
+      "ProviderID": "17",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png",
+      "Abbr": "BKN"
+    },
+    {
+      "Key": "nfl-2",
+      "Name": "Bills",
+      "FullName": "Buffalo Bills",
+      "League": "NFL",
+      "ProviderID": "2",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png",
+      "Abbr": "BUF"
+    },
+    {
+      "Key": "nhl-7",
+      "Name": "Sabres",
+      "FullName": "Buffalo Sabres",
+      "League": "NHL",
+      "ProviderID": "7",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/buf.png",
+      "Abbr": "BUF"
+    },
+    {
+      "Key": "nhl-20",
+      "Name": "Flames",
+      "FullName": "Calgary Flames",
+      "League": "NHL",
+      "ProviderID": "20",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/cgy.png",
+      "Abbr": "CGY"
+    },
+    {
+      "Key": "nhl-12",
+      "Name": "Hurricanes",
+      "FullName": "Carolina Hurricanes",
+      "League": "NHL",
+      "ProviderID": "12",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/car.png",
+      "Abbr": "CAR"
+    },
+    {
+      "Key": "nfl-29",
+      "Name": "Panthers",
+      "FullName": "Carolina Panthers",
+      "League": "NFL",
+      "ProviderID": "29",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/car.png",
+      "Abbr": "CAR"
+    },
+    {
+      "Key": "mls-9720",
+      "Name": "CF Montréal",
+      "FullName": "CF Montréal",
+      "League": "MLS",
+      "ProviderID": "9720",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/9720.png",
+      "Abbr": "MTL"
+    },
+    {
+      "Key": "mls-21300",
+      "Name": "Charlotte",
+      "FullName": "Charlotte FC",
+      "League": "MLS",
+      "ProviderID": "21300",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/21300.png",
+      "Abbr": "CLT"
+    },
+    {
+      "Key": "nba-30",
+      "Name": "Hornets",
+      "FullName": "Charlotte Hornets",
+      "League": "NBA",
+      "ProviderID": "30",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/cha.png",
+      "Abbr": "CHA"
+    },
+    {
+      "Key": "epl-363",
+      "Name": "Chelsea",
+      "FullName": "Chelsea",
+      "League": "EPL",
+      "ProviderID": "363",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/363.png",
+      "Abbr": "CHE"
+    },
+    {
+      "Key": "nfl-3",
+      "Name": "Bears",
+      "FullName": "Chicago Bears",
+      "League": "NFL",
+      "ProviderID": "3",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png",
+      "Abbr": "CHI"
+    },
+    {
+      "Key": "nhl-16",
+      "Name": "Blackhawks",
+      "FullName": "Chicago Blackhawks",
+      "League": "NHL",
+      "ProviderID": "16",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/chi.png",
+      "Abbr": "CHI"
+    },
+    {
+      "Key": "nba-4",
+      "Name": "Bulls",
+      "FullName": "Chicago Bulls",
+      "League": "NBA",
+      "ProviderID": "4",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/chi.png",
+      "Abbr": "CHI"
+    },
+    {
+      "Key": "mlb-112",
+      "Name": "Cubs",
+      "FullName": "Chicago Cubs",
+      "League": "MLB",
+      "ProviderID": "112",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/chc.png",
+      "Abbr": "CHC"
+    },
+    {
+      "Key": "mls-182",
+      "Name": "Chicago",
+      "FullName": "Chicago Fire FC",
+      "League": "MLS",
+      "ProviderID": "182",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/182.png",
+      "Abbr": "CHI"
+    },
+    {
+      "Key": "mlb-145",
+      "Name": "White Sox",
+      "FullName": "Chicago White Sox",
+      "League": "MLB",
+      "ProviderID": "145",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/chw.png",
+      "Abbr": "CHW"
+    },
+    {
+      "Key": "nfl-4",
+      "Name": "Bengals",
+      "FullName": "Cincinnati Bengals",
+      "League": "NFL",
+      "ProviderID": "4",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png",
+      "Abbr": "CIN"
+    },
+    {
+      "Key": "mlb-113",
+      "Name": "Reds",
+      "FullName": "Cincinnati Reds",
+      "League": "MLB",
+      "ProviderID": "113",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/cin.png",
+      "Abbr": "CIN"
+    },
+    {
+      "Key": "nfl-5",
+      "Name": "Browns",
+      "FullName": "Cleveland Browns",
+      "League": "NFL",
+      "ProviderID": "5",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png",
+      "Abbr": "CLE"
+    },
+    {
+      "Key": "nba-5",
+      "Name": "Cavaliers",
+      "FullName": "Cleveland Cavaliers",
+      "League": "NBA",
+      "ProviderID": "5",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/cle.png",
+      "Abbr": "CLE"
+    },
+    {
+      "Key": "mlb-114",
+      "Name": "Guardians",
+      "FullName": "Cleveland Guardians",
+      "League": "MLB",
+      "ProviderID": "114",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/cle.png",
+      "Abbr": "CLE"
+    },
+    {
+      "Key": "nhl-21",
+      "Name": "Avalanche",
+      "FullName": "Colorado Avalanche",
+      "League": "NHL",
+      "ProviderID": "21",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/col.png",
+      "Abbr": "COL"
+    },
+    {
+      "Key": "mls-184",
+      "Name": "Colorado",
+      "FullName": "Colorado Rapids",
+      "League": "MLS",
+      "ProviderID": "184",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/184.png",
+      "Abbr": "COL"
+    },
+    {
+      "Key": "mlb-115",
+      "Name": "Rockies",
+      "FullName": "Colorado Rockies",
+      "League": "MLB",
+      "ProviderID": "115",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/col.png",
+      "Abbr": "COL"
+    },
+    {
+      "Key": "nhl-29",
+      "Name": "Blue Jackets",
+      "FullName": "Columbus Blue Jackets",
+      "League": "NHL",
+      "ProviderID": "29",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/cbj.png",
+      "Abbr": "CBJ"
+    },
+    {
+      "Key": "mls-183",
+      "Name": "Columbus",
+      "FullName": "Columbus Crew",
+      "League": "MLS",
+      "ProviderID": "183",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/183.png",
+      "Abbr": "CLB"
+    },
+    {
+      "Key": "epl-388",
+      "Name": "Coventry",
+      "FullName": "Coventry City",
+      "League": "EPL",
+      "ProviderID": "388",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/388.png",
+      "Abbr": "COV"
+    },
+    {
+      "Key": "epl-384",
+      "Name": "C Palace",
+      "FullName": "Crystal Palace",
+      "League": "EPL",
+      "ProviderID": "384",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/384.png",
+      "Abbr": "CRY"
+    },
+    {
+      "Key": "mls-193",
+      "Name": "D.C. United",
+      "FullName": "D.C. United",
+      "League": "MLS",
+      "ProviderID": "193",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/193.png",
+      "Abbr": "DC"
+    },
+    {
+      "Key": "nfl-6",
+      "Name": "Cowboys",
+      "FullName": "Dallas Cowboys",
+      "League": "NFL",
+      "ProviderID": "6",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png",
+      "Abbr": "DAL"
+    },
+    {
+      "Key": "nba-6",
+      "Name": "Mavericks",
+      "FullName": "Dallas Mavericks",
+      "League": "NBA",
+      "ProviderID": "6",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/dal.png",
+      "Abbr": "DAL"
+    },
+    {
+      "Key": "nhl-25",
+      "Name": "Stars",
+      "FullName": "Dallas Stars",
+      "League": "NHL",
+      "ProviderID": "25",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/dal.png",
+      "Abbr": "DAL"
+    },
+    {
+      "Key": "nfl-7",
+      "Name": "Broncos",
+      "FullName": "Denver Broncos",
+      "League": "NFL",
+      "ProviderID": "7",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/den.png",
+      "Abbr": "DEN"
+    },
+    {
+      "Key": "nba-7",
+      "Name": "Nuggets",
+      "FullName": "Denver Nuggets",
+      "League": "NBA",
+      "ProviderID": "7",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/den.png",
+      "Abbr": "DEN"
+    },
+    {
+      "Key": "nfl-8",
+      "Name": "Lions",
+      "FullName": "Detroit Lions",
+      "League": "NFL",
+      "ProviderID": "8",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/det.png",
+      "Abbr": "DET"
+    },
+    {
+      "Key": "nba-8",
+      "Name": "Pistons",
+      "FullName": "Detroit Pistons",
+      "League": "NBA",
+      "ProviderID": "8",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+      "Abbr": "DET"
+    },
+    {
+      "Key": "nhl-17",
+      "Name": "Red Wings",
+      "FullName": "Detroit Red Wings",
+      "League": "NHL",
+      "ProviderID": "17",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/det.png",
+      "Abbr": "DET"
+    },
+    {
+      "Key": "mlb-116",
+      "Name": "Tigers",
+      "FullName": "Detroit Tigers",
+      "League": "MLB",
+      "ProviderID": "116",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/det.png",
+      "Abbr": "DET"
+    },
+    {
+      "Key": "nhl-22",
+      "Name": "Oilers",
+      "FullName": "Edmonton Oilers",
+      "League": "NHL",
+      "ProviderID": "22",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/edm.png",
+      "Abbr": "EDM"
+    },
+    {
+      "Key": "epl-368",
+      "Name": "Everton",
+      "FullName": "Everton",
+      "League": "EPL",
+      "ProviderID": "368",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/368.png",
+      "Abbr": "EVE"
+    },
+    {
+      "Key": "mls-18267",
+      "Name": "Cincinnati",
+      "FullName": "FC Cincinnati",
+      "League": "MLS",
+      "ProviderID": "18267",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/18267.png",
+      "Abbr": "CIN"
+    },
+    {
+      "Key": "mls-185",
+      "Name": "Dallas",
+      "FullName": "FC Dallas",
+      "League": "MLS",
+      "ProviderID": "185",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/185.png",
+      "Abbr": "DAL"
+    },
+    {
+      "Key": "nhl-13",
+      "Name": "Panthers",
+      "FullName": "Florida Panthers",
+      "League": "NHL",
+      "ProviderID": "13",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png",
+      "Abbr": "FLA"
+    },
+    {
+      "Key": "epl-370",
+      "Name": "Fulham",
+      "FullName": "Fulham",
+      "League": "EPL",
+      "ProviderID": "370",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/370.png",
+      "Abbr": "FUL"
+    },
+    {
+      "Key": "nba-9",
+      "Name": "Warriors",
+      "FullName": "Golden State Warriors",
+      "League": "NBA",
+      "ProviderID": "9",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+      "Abbr": "GS"
+    },
+    {
+      "Key": "nfl-9",
+      "Name": "Packers",
+      "FullName": "Green Bay Packers",
+      "League": "NFL",
+      "ProviderID": "9",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png",
+      "Abbr": "GB"
+    },
+    {
+      "Key": "mlb-117",
+      "Name": "Astros",
+      "FullName": "Houston Astros",
+      "League": "MLB",
+      "ProviderID": "117",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/hou.png",
+      "Abbr": "HOU"
+    },
+    {
+      "Key": "mls-6077",
+      "Name": "Houston",
+      "FullName": "Houston Dynamo FC",
+      "League": "MLS",
+      "ProviderID": "6077",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/6077.png",
+      "Abbr": "HOU"
+    },
+    {
+      "Key": "nba-10",
+      "Name": "Rockets",
+      "FullName": "Houston Rockets",
+      "League": "NBA",
+      "ProviderID": "10",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/hou.png",
+      "Abbr": "HOU"
+    },
+    {
+      "Key": "nfl-34",
+      "Name": "Texans",
+      "FullName": "Houston Texans",
+      "League": "NFL",
+      "ProviderID": "34",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png",
+      "Abbr": "HOU"
+    },
+    {
+      "Key": "epl-306",
+      "Name": "Hull",
+      "FullName": "Hull City",
+      "League": "EPL",
+      "ProviderID": "306",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/306.png",
+      "Abbr": "HUL"
+    },
+    {
+      "Key": "nba-11",
+      "Name": "Pacers",
+      "FullName": "Indiana Pacers",
+      "League": "NBA",
+      "ProviderID": "11",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/ind.png",
+      "Abbr": "IND"
+    },
+    {
+      "Key": "nfl-11",
+      "Name": "Colts",
+      "FullName": "Indianapolis Colts",
+      "League": "NFL",
+      "ProviderID": "11",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png",
+      "Abbr": "IND"
+    },
+    {
+      "Key": "mls-20232",
+      "Name": "Miami",
+      "FullName": "Inter Miami CF",
+      "League": "MLS",
+      "ProviderID": "20232",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/20232.png",
+      "Abbr": "MIA"
+    },
+    {
+      "Key": "epl-373",
+      "Name": "Ipswich",
+      "FullName": "Ipswich Town",
+      "League": "EPL",
+      "ProviderID": "373",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/373.png",
+      "Abbr": "IPS"
+    },
+    {
+      "Key": "nfl-30",
+      "Name": "Jaguars",
+      "FullName": "Jacksonville Jaguars",
+      "League": "NFL",
+      "ProviderID": "30",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png",
+      "Abbr": "JAX"
+    },
+    {
+      "Key": "nfl-12",
+      "Name": "Chiefs",
+      "FullName": "Kansas City Chiefs",
+      "League": "NFL",
+      "ProviderID": "12",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+      "Abbr": "KC"
+    },
+    {
+      "Key": "mlb-118",
+      "Name": "Royals",
+      "FullName": "Kansas City Royals",
+      "League": "MLB",
+      "ProviderID": "118",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/kc.png",
+      "Abbr": "KC"
+    },
+    {
+      "Key": "nba-12",
+      "Name": "Clippers",
+      "FullName": "LA Clippers",
+      "League": "NBA",
+      "ProviderID": "12",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+      "Abbr": "LAC"
+    },
+    {
+      "Key": "mls-187",
+      "Name": "LA Galaxy",
+      "FullName": "LA Galaxy",
+      "League": "MLS",
+      "ProviderID": "187",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/187.png",
+      "Abbr": "LA"
+    },
+    {
+      "Key": "mls-18966",
+      "Name": "LAFC",
+      "FullName": "LAFC",
+      "League": "MLS",
+      "ProviderID": "18966",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/18966.png",
+      "Abbr": "LAFC"
+    },
+    {
+      "Key": "nfl-13",
+      "Name": "Raiders",
+      "FullName": "Las Vegas Raiders",
+      "League": "NFL",
+      "ProviderID": "13",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/lv.png",
+      "Abbr": "LV"
+    },
+    {
+      "Key": "epl-357",
+      "Name": "Leeds",
+      "FullName": "Leeds United",
+      "League": "EPL",
+      "ProviderID": "357",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/357.png",
+      "Abbr": "LEE"
+    },
+    {
+      "Key": "epl-364",
+      "Name": "Liverpool",
+      "FullName": "Liverpool",
+      "League": "EPL",
+      "ProviderID": "364",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/364.png",
+      "Abbr": "LIV"
+    },
+    {
+      "Key": "mlb-108",
+      "Name": "Angels",
+      "FullName": "Los Angeles Angels",
+      "League": "MLB",
+      "ProviderID": "108",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/laa.png",
+      "Abbr": "LAA"
+    },
+    {
+      "Key": "nfl-24",
+      "Name": "Chargers",
+      "FullName": "Los Angeles Chargers",
+      "League": "NFL",
+      "ProviderID": "24",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png",
+      "Abbr": "LAC"
+    },
+    {
+      "Key": "mlb-119",
+      "Name": "Dodgers",
+      "FullName": "Los Angeles Dodgers",
+      "League": "MLB",
+      "ProviderID": "119",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/lad.png",
+      "Abbr": "LAD"
+    },
+    {
+      "Key": "nhl-26",
+      "Name": "Kings",
+      "FullName": "Los Angeles Kings",
+      "League": "NHL",
+      "ProviderID": "26",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/la.png",
+      "Abbr": "LAK"
+    },
+    {
+      "Key": "nba-13",
+      "Name": "Lakers",
+      "FullName": "Los Angeles Lakers",
+      "League": "NBA",
+      "ProviderID": "13",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+      "Abbr": "LAL"
+    },
+    {
+      "Key": "nfl-14",
+      "Name": "Rams",
+      "FullName": "Los Angeles Rams",
+      "League": "NFL",
+      "ProviderID": "14",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png",
+      "Abbr": "LAR"
+    },
+    {
+      "Key": "epl-382",
+      "Name": "Man City",
+      "FullName": "Manchester City",
+      "League": "EPL",
+      "ProviderID": "382",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
+      "Abbr": "MNC"
+    },
+    {
+      "Key": "epl-360",
+      "Name": "Man United",
+      "FullName": "Manchester United",
+      "League": "EPL",
+      "ProviderID": "360",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
+      "Abbr": "MAN"
+    },
+    {
+      "Key": "nba-29",
+      "Name": "Grizzlies",
+      "FullName": "Memphis Grizzlies",
+      "League": "NBA",
+      "ProviderID": "29",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/mem.png",
+      "Abbr": "MEM"
+    },
+    {
+      "Key": "nfl-15",
+      "Name": "Dolphins",
+      "FullName": "Miami Dolphins",
+      "League": "NFL",
+      "ProviderID": "15",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+      "Abbr": "MIA"
+    },
+    {
+      "Key": "nba-14",
+      "Name": "Heat",
+      "FullName": "Miami Heat",
+      "League": "NBA",
+      "ProviderID": "14",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png",
+      "Abbr": "MIA"
+    },
+    {
+      "Key": "mlb-146",
+      "Name": "Marlins",
+      "FullName": "Miami Marlins",
+      "League": "MLB",
+      "ProviderID": "146",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/mia.png",
+      "Abbr": "MIA"
+    },
+    {
+      "Key": "mlb-158",
+      "Name": "Brewers",
+      "FullName": "Milwaukee Brewers",
+      "League": "MLB",
+      "ProviderID": "158",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/mil.png",
+      "Abbr": "MIL"
+    },
+    {
+      "Key": "nba-15",
+      "Name": "Bucks",
+      "FullName": "Milwaukee Bucks",
+      "League": "NBA",
+      "ProviderID": "15",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png",
+      "Abbr": "MIL"
+    },
+    {
+      "Key": "nba-16",
+      "Name": "Timberwolves",
+      "FullName": "Minnesota Timberwolves",
+      "League": "NBA",
+      "ProviderID": "16",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/min.png",
+      "Abbr": "MIN"
+    },
+    {
+      "Key": "mlb-142",
+      "Name": "Twins",
+      "FullName": "Minnesota Twins",
+      "League": "MLB",
+      "ProviderID": "142",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/min.png",
+      "Abbr": "MIN"
+    },
+    {
+      "Key": "mls-17362",
+      "Name": "Minnesota",
+      "FullName": "Minnesota United FC",
+      "League": "MLS",
+      "ProviderID": "17362",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/17362.png",
+      "Abbr": "MIN"
+    },
+    {
+      "Key": "nfl-16",
+      "Name": "Vikings",
+      "FullName": "Minnesota Vikings",
+      "League": "NFL",
+      "ProviderID": "16",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/min.png",
+      "Abbr": "MIN"
+    },
+    {
+      "Key": "nhl-30",
+      "Name": "Wild",
+      "FullName": "Minnesota Wild",
+      "League": "NHL",
+      "ProviderID": "30",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png",
+      "Abbr": "MIN"
+    },
+    {
+      "Key": "nhl-8",
+      "Name": "Canadiens",
+      "FullName": "Montreal Canadiens",
+      "League": "NHL",
+      "ProviderID": "8",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/mtl.png",
+      "Abbr": "MTL"
+    },
+    {
+      "Key": "nhl-18",
+      "Name": "Predators",
+      "FullName": "Nashville Predators",
+      "League": "NHL",
+      "ProviderID": "18",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/nsh.png",
+      "Abbr": "NSH"
+    },
+    {
+      "Key": "mls-18986",
+      "Name": "Nashville",
+      "FullName": "Nashville SC",
+      "League": "MLS",
+      "ProviderID": "18986",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/18986.png",
+      "Abbr": "NSH"
+    },
+    {
+      "Key": "patriots",
+      "Name": "Patriots",
+      "FullName": "New England Patriots",
+      "League": "NFL",
+      "ProviderID": "17",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+      "Abbr": "NE"
+    },
+    {
+      "Key": "revolution",
+      "Name": "Revolution",
+      "FullName": "New England Revolution",
+      "League": "MLS",
+      "ProviderID": "189",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/189.png",
+      "Abbr": "NE"
+    },
+    {
+      "Key": "nhl-1",
+      "Name": "Devils",
+      "FullName": "New Jersey Devils",
+      "League": "NHL",
+      "ProviderID": "1",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/nj.png",
+      "Abbr": "NJD"
+    },
+    {
+      "Key": "nba-3",
+      "Name": "Pelicans",
+      "FullName": "New Orleans Pelicans",
+      "League": "NBA",
+      "ProviderID": "3",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/no.png",
+      "Abbr": "NO"
+    },
+    {
+      "Key": "nfl-18",
+      "Name": "Saints",
+      "FullName": "New Orleans Saints",
+      "League": "NFL",
+      "ProviderID": "18",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/no.png",
+      "Abbr": "NO"
+    },
+    {
+      "Key": "mls-17606",
+      "Name": "NYCFC",
+      "FullName": "New York City FC",
+      "League": "MLS",
+      "ProviderID": "17606",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/17606.png",
+      "Abbr": "NYC"
+    },
+    {
+      "Key": "nfl-19",
+      "Name": "Giants",
+      "FullName": "New York Giants",
+      "League": "NFL",
+      "ProviderID": "19",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png",
+      "Abbr": "NYG"
+    },
+    {
+      "Key": "nhl-2",
+      "Name": "Islanders",
+      "FullName": "New York Islanders",
+      "League": "NHL",
+      "ProviderID": "2",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png",
+      "Abbr": "NYI"
+    },
+    {
+      "Key": "nfl-20",
+      "Name": "Jets",
+      "FullName": "New York Jets",
+      "League": "NFL",
+      "ProviderID": "20",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png",
+      "Abbr": "NYJ"
+    },
+    {
+      "Key": "nba-18",
+      "Name": "Knicks",
+      "FullName": "New York Knicks",
+      "League": "NBA",
+      "ProviderID": "18",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png",
+      "Abbr": "NY"
+    },
+    {
+      "Key": "mlb-121",
+      "Name": "Mets",
+      "FullName": "New York Mets",
+      "League": "MLB",
+      "ProviderID": "121",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/nym.png",
+      "Abbr": "NYM"
+    },
+    {
+      "Key": "nhl-3",
+      "Name": "Rangers",
+      "FullName": "New York Rangers",
+      "League": "NHL",
+      "ProviderID": "3",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png",
+      "Abbr": "NYR"
+    },
+    {
+      "Key": "mlb-147",
+      "Name": "Yankees",
+      "FullName": "New York Yankees",
+      "League": "MLB",
+      "ProviderID": "147",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png",
+      "Abbr": "NYY"
+    },
+    {
+      "Key": "epl-361",
+      "Name": "Newcastle",
+      "FullName": "Newcastle United",
+      "League": "EPL",
+      "ProviderID": "361",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
+      "Abbr": "NEW"
+    },
+    {
+      "Key": "epl-393",
+      "Name": "Nottm Forest",
+      "FullName": "Nottingham Forest",
+      "League": "EPL",
+      "ProviderID": "393",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
+      "Abbr": "NFO"
+    },
+    {
+      "Key": "nba-25",
+      "Name": "Thunder",
+      "FullName": "Oklahoma City Thunder",
+      "League": "NBA",
+      "ProviderID": "25",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+      "Abbr": "OKC"
+    },
+    {
+      "Key": "mls-12011",
+      "Name": "Orlando",
+      "FullName": "Orlando City SC",
+      "League": "MLS",
+      "ProviderID": "12011",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/12011.png",
+      "Abbr": "ORL"
+    },
+    {
+      "Key": "nba-19",
+      "Name": "Magic",
+      "FullName": "Orlando Magic",
+      "League": "NBA",
+      "ProviderID": "19",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+      "Abbr": "ORL"
+    },
+    {
+      "Key": "nhl-9",
+      "Name": "Senators",
+      "FullName": "Ottawa Senators",
+      "League": "NHL",
+      "ProviderID": "9",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/ott.png",
+      "Abbr": "OTT"
+    },
+    {
+      "Key": "nba-20",
+      "Name": "76ers",
+      "FullName": "Philadelphia 76ers",
+      "League": "NBA",
+      "ProviderID": "20",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png",
+      "Abbr": "PHI"
+    },
+    {
+      "Key": "nfl-21",
+      "Name": "Eagles",
+      "FullName": "Philadelphia Eagles",
+      "League": "NFL",
+      "ProviderID": "21",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+      "Abbr": "PHI"
+    },
+    {
+      "Key": "nhl-4",
+      "Name": "Flyers",
+      "FullName": "Philadelphia Flyers",
+      "League": "NHL",
+      "ProviderID": "4",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/phi.png",
+      "Abbr": "PHI"
+    },
+    {
+      "Key": "mlb-143",
+      "Name": "Phillies",
+      "FullName": "Philadelphia Phillies",
+      "League": "MLB",
+      "ProviderID": "143",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/phi.png",
+      "Abbr": "PHI"
+    },
+    {
+      "Key": "mls-10739",
+      "Name": "Philadelphia",
+      "FullName": "Philadelphia Union",
+      "League": "MLS",
+      "ProviderID": "10739",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/10739.png",
+      "Abbr": "PHI"
+    },
+    {
+      "Key": "nba-21",
+      "Name": "Suns",
+      "FullName": "Phoenix Suns",
+      "League": "NBA",
+      "ProviderID": "21",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+      "Abbr": "PHX"
+    },
+    {
+      "Key": "nhl-5",
+      "Name": "Penguins",
+      "FullName": "Pittsburgh Penguins",
+      "League": "NHL",
+      "ProviderID": "5",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/pit.png",
+      "Abbr": "PIT"
+    },
+    {
+      "Key": "mlb-134",
+      "Name": "Pirates",
+      "FullName": "Pittsburgh Pirates",
+      "League": "MLB",
+      "ProviderID": "134",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/pit.png",
+      "Abbr": "PIT"
+    },
+    {
+      "Key": "nfl-23",
+      "Name": "Steelers",
+      "FullName": "Pittsburgh Steelers",
+      "League": "NFL",
+      "ProviderID": "23",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png",
+      "Abbr": "PIT"
+    },
+    {
+      "Key": "mls-9723",
+      "Name": "Portland",
+      "FullName": "Portland Timbers",
+      "League": "MLS",
+      "ProviderID": "9723",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/9723.png",
+      "Abbr": "POR"
+    },
+    {
+      "Key": "nba-22",
+      "Name": "Trail Blazers",
+      "FullName": "Portland Trail Blazers",
+      "League": "NBA",
+      "ProviderID": "22",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/por.png",
+      "Abbr": "POR"
+    },
+    {
+      "Key": "mls-4771",
+      "Name": "Salt Lake",
+      "FullName": "Real Salt Lake",
+      "League": "MLS",
+      "ProviderID": "4771",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/4771.png",
+      "Abbr": "RSL"
+    },
+    {
+      "Key": "mls-190",
+      "Name": "Red Bull NY",
+      "FullName": "Red Bull New York",
+      "League": "MLS",
+      "ProviderID": "190",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/190.png",
+      "Abbr": "RBNY"
+    },
+    {
+      "Key": "nba-23",
+      "Name": "Kings",
+      "FullName": "Sacramento Kings",
+      "League": "NBA",
+      "ProviderID": "23",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/sac.png",
+      "Abbr": "SAC"
+    },
+    {
+      "Key": "nba-24",
+      "Name": "Spurs",
+      "FullName": "San Antonio Spurs",
+      "League": "NBA",
+      "ProviderID": "24",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/sa.png",
+      "Abbr": "SA"
+    },
+    {
+      "Key": "mls-22529",
+      "Name": "San Diego",
+      "FullName": "San Diego FC",
+      "League": "MLS",
+      "ProviderID": "22529",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/22529.png",
+      "Abbr": "SD"
+    },
+    {
+      "Key": "mlb-135",
+      "Name": "Padres",
+      "FullName": "San Diego Padres",
+      "League": "MLB",
+      "ProviderID": "135",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/sd.png",
+      "Abbr": "SD"
+    },
+    {
+      "Key": "nfl-25",
+      "Name": "49ers",
+      "FullName": "San Francisco 49ers",
+      "League": "NFL",
+      "ProviderID": "25",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png",
+      "Abbr": "SF"
+    },
+    {
+      "Key": "mlb-137",
+      "Name": "Giants",
+      "FullName": "San Francisco Giants",
+      "League": "MLB",
+      "ProviderID": "137",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/sf.png",
+      "Abbr": "SF"
+    },
+    {
+      "Key": "mls-191",
+      "Name": "San Jose",
+      "FullName": "San Jose Earthquakes",
+      "League": "MLS",
+      "ProviderID": "191",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/191.png",
+      "Abbr": "SJ"
+    },
+    {
+      "Key": "nhl-28",
+      "Name": "Sharks",
+      "FullName": "San Jose Sharks",
+      "League": "NHL",
+      "ProviderID": "28",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/sj.png",
+      "Abbr": "SJS"
+    },
+    {
+      "Key": "nhl-55",
+      "Name": "Kraken",
+      "FullName": "Seattle Kraken",
+      "League": "NHL",
+      "ProviderID": "55",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/sea.png",
+      "Abbr": "SEA"
+    },
+    {
+      "Key": "mlb-136",
+      "Name": "Mariners",
+      "FullName": "Seattle Mariners",
+      "League": "MLB",
+      "ProviderID": "136",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/sea.png",
+      "Abbr": "SEA"
+    },
+    {
+      "Key": "nfl-26",
+      "Name": "Seahawks",
+      "FullName": "Seattle Seahawks",
+      "League": "NFL",
+      "ProviderID": "26",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+      "Abbr": "SEA"
+    },
+    {
+      "Key": "mls-9726",
+      "Name": "Seattle",
+      "FullName": "Seattle Sounders FC",
+      "League": "MLS",
+      "ProviderID": "9726",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/9726.png",
+      "Abbr": "SEA"
+    },
+    {
+      "Key": "mls-186",
+      "Name": "Kansas City",
+      "FullName": "Sporting Kansas City",
+      "League": "MLS",
+      "ProviderID": "186",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/186.png",
+      "Abbr": "SKC"
+    },
+    {
+      "Key": "nhl-19",
+      "Name": "Blues",
+      "FullName": "St. Louis Blues",
+      "League": "NHL",
+      "ProviderID": "19",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/stl.png",
+      "Abbr": "STL"
+    },
+    {
+      "Key": "mlb-138",
+      "Name": "Cardinals",
+      "FullName": "St. Louis Cardinals",
+      "League": "MLB",
+      "ProviderID": "138",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/stl.png",
+      "Abbr": "STL"
+    },
+    {
+      "Key": "mls-21812",
+      "Name": "St. Louis",
+      "FullName": "St. Louis CITY SC",
+      "League": "MLS",
+      "ProviderID": "21812",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/21812.png",
+      "Abbr": "STL"
+    },
+    {
+      "Key": "epl-366",
+      "Name": "Sunderland",
+      "FullName": "Sunderland",
+      "League": "EPL",
+      "ProviderID": "366",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/366.png",
+      "Abbr": "SUN"
+    },
+    {
+      "Key": "nfl-27",
+      "Name": "Buccaneers",
+      "FullName": "Tampa Bay Buccaneers",
+      "League": "NFL",
+      "ProviderID": "27",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png",
+      "Abbr": "TB"
+    },
+    {
+      "Key": "nhl-14",
+      "Name": "Lightning",
+      "FullName": "Tampa Bay Lightning",
+      "League": "NHL",
+      "ProviderID": "14",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/tb.png",
+      "Abbr": "TBL"
+    },
+    {
+      "Key": "mlb-139",
+      "Name": "Rays",
+      "FullName": "Tampa Bay Rays",
+      "League": "MLB",
+      "ProviderID": "139",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/tb.png",
+      "Abbr": "TB"
+    },
+    {
+      "Key": "nfl-10",
+      "Name": "Titans",
+      "FullName": "Tennessee Titans",
+      "League": "NFL",
+      "ProviderID": "10",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ten.png",
+      "Abbr": "TEN"
+    },
+    {
+      "Key": "mlb-140",
+      "Name": "Rangers",
+      "FullName": "Texas Rangers",
+      "League": "MLB",
+      "ProviderID": "140",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/tex.png",
+      "Abbr": "TEX"
+    },
+    {
+      "Key": "mlb-141",
+      "Name": "Blue Jays",
+      "FullName": "Toronto Blue Jays",
+      "League": "MLB",
+      "ProviderID": "141",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/tor.png",
+      "Abbr": "TOR"
+    },
+    {
+      "Key": "mls-7318",
+      "Name": "Toronto",
+      "FullName": "Toronto FC",
+      "League": "MLS",
+      "ProviderID": "7318",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/7318.png",
+      "Abbr": "TOR"
+    },
+    {
+      "Key": "nhl-10",
+      "Name": "Maple Leafs",
+      "FullName": "Toronto Maple Leafs",
+      "League": "NHL",
+      "ProviderID": "10",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/tor.png",
+      "Abbr": "TOR"
+    },
+    {
+      "Key": "nba-28",
+      "Name": "Raptors",
+      "FullName": "Toronto Raptors",
+      "League": "NBA",
+      "ProviderID": "28",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/tor.png",
+      "Abbr": "TOR"
+    },
+    {
+      "Key": "epl-367",
+      "Name": "Spurs",
+      "FullName": "Tottenham Hotspur",
+      "League": "EPL",
+      "ProviderID": "367",
+      "Route": "soccer/eng.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/367.png",
+      "Abbr": "TOT"
+    },
+    {
+      "Key": "nba-26",
+      "Name": "Jazz",
+      "FullName": "Utah Jazz",
+      "League": "NBA",
+      "ProviderID": "26",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/utah.png",
+      "Abbr": "UTAH"
+    },
+    {
+      "Key": "nhl-68",
+      "Name": "Mammoth",
+      "FullName": "Utah Mammoth",
+      "League": "NHL",
+      "ProviderID": "68",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/utah.png",
+      "Abbr": "UTA"
+    },
+    {
+      "Key": "nhl-23",
+      "Name": "Canucks",
+      "FullName": "Vancouver Canucks",
+      "League": "NHL",
+      "ProviderID": "23",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/van.png",
+      "Abbr": "VAN"
+    },
+    {
+      "Key": "mls-9727",
+      "Name": "Vancouver",
+      "FullName": "Vancouver Whitecaps",
+      "League": "MLS",
+      "ProviderID": "9727",
+      "Route": "soccer/usa.1",
+      "Logo": "https://a.espncdn.com/i/teamlogos/soccer/500/9727.png",
+      "Abbr": "VAN"
+    },
+    {
+      "Key": "nhl-54",
+      "Name": "Golden Knights",
+      "FullName": "Vegas Golden Knights",
+      "League": "NHL",
+      "ProviderID": "54",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/vgk.png",
+      "Abbr": "VGK"
+    },
+    {
+      "Key": "nhl-15",
+      "Name": "Capitals",
+      "FullName": "Washington Capitals",
+      "League": "NHL",
+      "ProviderID": "15",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/wsh.png",
+      "Abbr": "WSH"
+    },
+    {
+      "Key": "nfl-28",
+      "Name": "Commanders",
+      "FullName": "Washington Commanders",
+      "League": "NFL",
+      "ProviderID": "28",
+      "Route": "football/nfl",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png",
+      "Abbr": "WSH"
+    },
+    {
+      "Key": "mlb-120",
+      "Name": "Nationals",
+      "FullName": "Washington Nationals",
+      "League": "MLB",
+      "ProviderID": "120",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/mlb/500/wsh.png",
+      "Abbr": "WSH"
+    },
+    {
+      "Key": "nba-27",
+      "Name": "Wizards",
+      "FullName": "Washington Wizards",
+      "League": "NBA",
+      "ProviderID": "27",
+      "Route": "basketball/nba",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png",
+      "Abbr": "WSH"
+    },
+    {
+      "Key": "nhl-52",
+      "Name": "Jets",
+      "FullName": "Winnipeg Jets",
+      "League": "NHL",
+      "ProviderID": "52",
+      "Route": "",
+      "Logo": "https://a.espncdn.com/i/teamlogos/nhl/500/wpg.png",
+      "Abbr": "WPG"
+    }
+  ]
+}

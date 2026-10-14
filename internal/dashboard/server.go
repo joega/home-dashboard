@@ -30,6 +30,7 @@ type Page struct {
 	Sports                                                                                                             sports.View
 	SportsSettings                                                                                                     sports.Settings
 	SportsTeams                                                                                                        []sports.Team
+	SportsCatalog, SportsShortcuts, SportsMore                                                                         []sports.Team
 	Recipe                                                                                                             Recipe
 	Recipes                                                                                                            []Recipe
 	RecipeFilter                                                                                                       RecipeFilter
@@ -89,6 +90,12 @@ type App struct {
 
 func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App, error) {
 	functions := template.FuncMap{
+		"sportsChoice": func(t sports.Team, selected bool) any {
+			return struct {
+				Team     sports.Team
+				Selected bool
+			}{t, selected}
+		},
 		"clock": func(t time.Time) string { return t.Format("3:04 PM") },
 		"timeLabel": func(v string) string {
 			t, e := time.Parse("15:04", v)

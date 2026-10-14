@@ -102,7 +102,14 @@ func (a *App) loadSports(p *Page, q url.Values) error {
 		return err
 	}
 	p.SportsSettings = cfg
-	p.SportsTeams = sports.Teams()
+	p.SportsTeams = cfg.Selected()
+	p.SportsShortcuts = p.SportsTeams[:min(6, len(p.SportsTeams))]
+	p.SportsMore = p.SportsTeams[min(6, len(p.SportsTeams)):]
+	for _, t := range sports.Teams() {
+		if !cfg.Has(t.Key) {
+			p.SportsCatalog = append(p.SportsCatalog, t)
+		}
+	}
 	p.Sports = sports.MakeView(a.sports.States(cfg, p.Now), cfg, q.Get("team"), q.Get("view"), p.Now)
 	return nil
 }

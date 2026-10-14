@@ -20,7 +20,7 @@ import (
 const maxBody = 2 << 20
 
 // Sources/payload states adapt Sportray's provider adapters. URLs are fixed by
-// the reviewed five-team catalog; no arbitrary provider/image URL is accepted.
+// the reviewed team catalog; no arbitrary provider/image URL is accepted.
 type Client struct{ HTTP *http.Client }
 
 func NewClient() *Client {
@@ -57,14 +57,14 @@ func (c *Client) get(ctx context.Context, address string, target any) error {
 func (c *Client) Fetch(ctx context.Context, team Team, now time.Time) (Snapshot, error) {
 	known, ok := Find(team.Key)
 	if !ok || known != team {
-		return Snapshot{}, errors.New("Unknown household team")
+		return Snapshot{}, errors.New("Unknown sports team")
 	}
 	var games []Game
 	var err error
-	switch team.Key {
-	case "bruins":
+	switch team.League {
+	case "NHL":
 		games, err = c.nhl(ctx, team)
-	case "red-sox":
+	case "MLB":
 		games, err = c.mlb(ctx, team, now)
 	default:
 		games, err = c.espn(ctx, team)
@@ -153,7 +153,7 @@ func (c *Client) espn(ctx context.Context, t Team) ([]Game, error) {
 	}
 	responses := []espnSchedule{first}
 	addresses := []string{}
-	if t.Key == "revolution" {
+	if t.League == "MLS" || t.League == "EPL" {
 		addresses = append(addresses, base+"?fixture=true")
 	} else {
 		if first.Season.Type != 2 {
@@ -311,8 +311,9 @@ type nhlSchedule struct {
 }
 
 func (c *Client) nhl(ctx context.Context, t Team) ([]Game, error) {
+	teamID, _ := strconv.Atoi(t.ProviderID)
 	var d nhlSchedule
-	if err := c.get(ctx, "https://api-web.nhle.com/v1/club-schedule-season/BOS/now", &d); err != nil {
+	if err := c.get(ctx, "https://api-web.nhle.com/v1/club-schedule-season/"+t.Abbr+"/now", &d); err != nil {
 		return nil, err
 	}
 	if d.Games == nil || len(d.Games) > 256 {
@@ -325,11 +326,11 @@ func (c *Client) nhl(ctx context.Context, t Team) ([]Game, error) {
 		}
 		ours, other := e.HomeTeam, e.AwayTeam
 		home := true
-		if ours.ID != 6 {
+		if ours.ID != teamID {
 			ours, other = e.AwayTeam, e.HomeTeam
 			home = false
 		}
-		if ours.ID != 6 || other.ID == 6 || other.ID <= 0 {
+		if ours.ID != teamID || other.ID == teamID || other.ID <= 0 {
 			return nil, errors.New("Unexpected NHL team")
 		}
 		start, err := parseStart(e.StartTimeUTC)
@@ -406,7 +407,8 @@ type mlbSchedule struct {
 }
 
 func (c *Client) mlb(ctx context.Context, t Team, now time.Time) ([]Game, error) {
-	q := url.Values{"sportId": {"1"}, "teamId": {"111"}, "startDate": {now.AddDate(0, 0, -30).Format("2006-01-02")}, "endDate": {now.AddDate(0, 0, 365).Format("2006-01-02")}, "hydrate": {"team,linescore"}}
+	q := url.Values{"sportId": {"1"}, "teamId": {t.ProviderID}, "startDate": {now.AddDate(0, 0, -30).Format("2006-01-02")}, "endDate": {now.AddDate(0, 0, 365).Format("2006-01-02")}, "hydrate": {"team,linescore"}}
+	teamID, _ := strconv.Atoi(t.ProviderID)
 	var d mlbSchedule
 	if err := c.get(ctx, "https://statsapi.mlb.com/api/v1/schedule?"+q.Encode(), &d); err != nil {
 		return nil, err
@@ -422,11 +424,11 @@ func (c *Client) mlb(ctx context.Context, t Team, now time.Time) ([]Game, error)
 			}
 			ours, other := e.Teams.Home, e.Teams.Away
 			home := true
-			if ours.Team.ID != 111 {
+			if ours.Team.ID != teamID {
 				ours, other = e.Teams.Away, e.Teams.Home
 				home = false
 			}
-			if ours.Team.ID != 111 || other.Team.ID == 111 || other.Team.ID <= 0 {
+			if ours.Team.ID != teamID || other.Team.ID == teamID || other.Team.ID <= 0 {
 				return nil, errors.New("Unexpected MLB team")
 			}
 			start, err := parseStart(e.GameDate)
