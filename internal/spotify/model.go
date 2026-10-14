@@ -169,7 +169,7 @@ func (v View) Controls() bool {
 	return v.Connected && v.ControlScope && v.Fresh && v.State.Device.Valid() && !v.State.Device.Restricted
 }
 func (v View) VolumeControls() bool {
-	return v.Controls() && v.State.Device.SupportsVolume && v.State.Device.Volume != nil
+	return v.Controls() && v.State.Device.SupportsVolume && v.State.Device.Volume != nil && !v.State.Disallows["setting_volume"]
 }
 func (v View) PlayAllowed() bool     { return v.Controls() && !v.State.Disallows["resuming"] }
 func (v View) PauseAllowed() bool    { return v.Controls() && !v.State.Disallows["pausing"] }
@@ -177,4 +177,16 @@ func (v View) NextAllowed() bool     { return v.Controls() && !v.State.Disallows
 func (v View) PreviousAllowed() bool { return v.Controls() && !v.State.Disallows["skipping_prev"] }
 func (v View) TransferAllowed() bool {
 	return v.Connected && v.Fresh && v.ControlScope && v.DevicesFresh && !v.State.Disallows["transferring_playback"]
+}
+
+func (v View) SelectionAllowed() bool {
+	if !v.Connected || !v.Fresh || !v.ControlScope || !v.DevicesFresh || v.State.Disallows["interrupting_playback"] {
+		return false
+	}
+	for _, d := range v.State.Devices {
+		if d.Valid() && !d.Restricted {
+			return true
+		}
+	}
+	return false
 }

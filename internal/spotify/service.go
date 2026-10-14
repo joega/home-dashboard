@@ -35,6 +35,8 @@ type Service struct {
 	image               []byte
 	next, lastCommand   time.Time
 	wake                chan struct{}
+	selections          map[string]selection
+	lastSearch          time.Time
 }
 
 func NewService(r Repository, p Provider) *Service {
@@ -56,6 +58,7 @@ func (s *Service) Reset() {
 	s.devicesAt = time.Time{}
 	s.image = nil
 	s.imageKey = ""
+	s.selections = nil
 	s.mu.Unlock()
 	s.Wake()
 }
@@ -225,8 +228,17 @@ func (s *Service) Artwork(key string) ([]byte, string) {
 	return append([]byte(nil), s.image...), s.imageType
 }
 func (s *Service) Command(ctx context.Context, id, action string) error {
+	return s.command(ctx, id, action, nil, nil)
+}
+func (s *Service) SetVolume(ctx context.Context, id string, level int) error {
+	if level < 0 || level > 100 || level%5 != 0 {
+		return errors.New("Choose a volume from 0 to 100 in 5% steps")
+	}
+	return s.command(ctx, id, "volume-set", &level, nil)
+}
+func (s *Service) command(ctx context.Context, id, action string, level *int, chosen *selection) error {
 	switch action {
-	case "play", "pause", "next", "previous", "volume-up", "volume-down", "transfer":
+	case "play", "pause", "next", "previous", "volume-up", "volume-down", "volume-set", "selection", "transfer":
 	default:
 		return errors.New("Unsupported Spotify command")
 	}
@@ -245,8 +257,8 @@ func (s *Service) Command(ctx context.Context, id, action string) error {
 	}
 	s.mu.Unlock()
 	d := v.State.Device
-	if action == "transfer" {
-		if !v.DevicesFresh || v.State.Disallows["transferring_playback"] {
+	if action == "transfer" || action == "selection" {
+		if !v.DevicesFresh || (action == "transfer" && v.State.Disallows["transferring_playback"]) || (action == "selection" && v.State.Disallows["interrupting_playback"]) {
 			return ErrRestricted
 		}
 		d = Device{}
@@ -262,11 +274,11 @@ func (s *Service) Command(ctx context.Context, id, action string) error {
 	if !d.Valid() || d.Restricted {
 		return ErrRestricted
 	}
-	disallow := map[string]string{"play": "resuming", "pause": "pausing", "next": "skipping_next", "previous": "skipping_prev"}
+	disallow := map[string]string{"play": "resuming", "pause": "pausing", "next": "skipping_next", "previous": "skipping_prev", "volume-set": "setting_volume", "volume-up": "setting_volume", "volume-down": "setting_volume"}
 	if v.State.Disallows[disallow[action]] {
 		return ErrRestricted
 	}
-	if (action == "volume-up" || action == "volume-down") && (!d.SupportsVolume || d.Volume == nil) {
+	if (action == "volume-up" || action == "volume-down" || action == "volume-set") && (!d.SupportsVolume || d.Volume == nil) {
 		return errors.New("Spotify does not expose volume controls for this device")
 	}
 	ctx, cancel := context.WithTimeout(ctx, 8*time.Second)
@@ -284,7 +296,22 @@ func (s *Service) Command(ctx context.Context, id, action string) error {
 	s.mu.Lock()
 	s.lastCommand = time.Now()
 	s.mu.Unlock()
-	e = s.Provider.Command(ctx, c, d, action)
+	switch action {
+	case "volume-set":
+		provider, ok := s.Provider.(VolumeSetter)
+		if !ok || level == nil {
+			return errors.New("Volume control is unavailable")
+		}
+		e = provider.SetVolume(ctx, c, d, *level)
+	case "selection":
+		provider, ok := s.Provider.(Catalog)
+		if !ok || chosen == nil || chosen.account != c.AccountID || chosen.client != c.ClientID || time.Now().After(chosen.expires) {
+			return errors.New("Search again before playing this selection")
+		}
+		e = provider.PlayItem(ctx, c, d, chosen.item)
+	default:
+		e = s.Provider.Command(ctx, c, d, action)
+	}
 	if e != nil {
 		s.fail(e)
 	} else {

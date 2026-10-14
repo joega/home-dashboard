@@ -178,3 +178,81 @@ func TestSpotifyConfigChangesAndPendingExpiry(t *testing.T) {
 		t.Fatal("tokens in public config")
 	}
 }
+
+type dashboardCatalogProvider struct {
+	dashboardSpotifyProvider
+	searches, plays, level int
+}
+
+func (p *dashboardCatalogProvider) Search(_ context.Context, _ spotify.Credential, q, kind string, offset int) (spotify.SearchResults, error) {
+	p.searches++
+	return spotify.SearchResults{Query: q, Kind: kind, Searched: true, Items: []spotify.SearchItem{{ID: "0123456789abcdefghijkl", Kind: kind, Title: "<script>title</script>", Artists: "Artist"}}}, nil
+}
+func (p *dashboardCatalogProvider) PlayItem(context.Context, spotify.Credential, spotify.Device, spotify.SearchItem) error {
+	p.plays++
+	return nil
+}
+func (p *dashboardCatalogProvider) SetVolume(_ context.Context, _ spotify.Credential, _ spotify.Device, level int) error {
+	p.level = level
+	return nil
+}
+func (p *dashboardCatalogProvider) Playback(context.Context, spotify.Credential) (spotify.Snapshot, error) {
+	n := 10
+	return spotify.Snapshot{Device: spotify.Device{ID: "speaker", SupportsVolume: true, Volume: &n}, Fetched: time.Now()}, nil
+}
+func (p *dashboardCatalogProvider) Devices(context.Context, spotify.Credential) ([]spotify.Device, error) {
+	n := 10
+	return []spotify.Device{{ID: "speaker", SupportsVolume: true, Volume: &n}}, nil
+}
+func TestSpotifySearchAndSliderRoutes(t *testing.T) {
+	store, _ := testStore(t)
+	cfg := spotify.Config{ClientID: strings.Repeat("a", 32), Redirect: "http://127.0.0.1:4182" + spotify.CallbackPath}
+	store.SaveSpotifyConfig(cfg)
+	cfg, _ = store.SpotifyConfig()
+	store.SaveSpotifyConnected(cfg.Revision, spotify.Credential{ClientID: cfg.ClientID, AccountID: "test-account", AccessToken: "private-access", RefreshToken: "private-refresh", Revision: "revision", Expires: time.Now().Add(time.Hour), Scope: spotify.Scopes})
+	a, e := New(store, time.UTC)
+	if e != nil {
+		t.Fatal(e)
+	}
+	p := &dashboardCatalogProvider{}
+	a.spotify = spotify.NewService(store, p)
+	a.spotify.Refresh(context.Background())
+	w := httptest.NewRecorder()
+	a.ServeHTTP(w, httptest.NewRequest("GET", "http://127.0.0.1:4182/media/spotify/search", nil))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), `role="dialog"`) || p.searches != 0 {
+		t.Fatal("opening search queried API", w.Code)
+	}
+	csrf := strings.Repeat("c", 64)
+	post := func(path string, values url.Values, authorized bool) *httptest.ResponseRecorder {
+		r := httptest.NewRequest("POST", "http://127.0.0.1:4182"+path, strings.NewReader(values.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		r.Header.Set("HX-Request", "true")
+		if authorized {
+			r.AddCookie(&http.Cookie{Name: "hq_csrf", Value: csrf})
+		}
+		w := httptest.NewRecorder()
+		a.ServeHTTP(w, r)
+		return w
+	}
+	for _, path := range []string{"/media/spotify/search", "/media/spotify/selection", "/media/spotify/volume"} {
+		if post(path, url.Values{}, false).Code != 403 {
+			t.Fatal("missing CSRF guard", path)
+		}
+	}
+	w = post("/media/spotify/search", url.Values{"csrf": {csrf}, "q": {"Artist"}, "kind": {"track"}, "offset": {"0"}}, true)
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "&lt;script&gt;title&lt;/script&gt;") || strings.Contains(w.Body.String(), "private-access") || p.searches != 1 {
+		t.Fatal("unsafe search response", w.Code)
+	}
+	w = post("/media/spotify/selection", url.Values{"csrf": {csrf}, "selection": {"arbitrary-uri"}, "device_id": {"speaker"}}, true)
+	if p.plays != 0 || w.Header().Get("HX-Retarget") != "#spotify-search-notice" {
+		t.Fatal("tampered selection executed")
+	}
+	w = post("/media/spotify/volume", url.Values{"csrf": {csrf}, "device_id": {"speaker"}, "volume": {"17"}}, true)
+	if p.level != 0 {
+		t.Fatal("invalid slider step sent")
+	}
+	w = post("/media/spotify/volume", url.Values{"csrf": {csrf}, "device_id": {"speaker"}, "volume": {"50"}}, true)
+	if w.Code != 200 || p.level != 50 {
+		t.Fatal("volume route failed", w.Code, p.level)
+	}
+}

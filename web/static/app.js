@@ -261,7 +261,7 @@
     if (event.shiftKey && document.activeElement === first) {event.preventDefault();last.focus();}
     else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first.focus();}
   });
-  document.addEventListener("input",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");});
+  document.addEventListener("input",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");if(event.target.matches('.spotify-volume-slider input')){event.target.closest('label').querySelector('output').textContent=event.target.value+'%';event.target.closest('form').setAttribute('data-pause-refresh','');}});
   document.addEventListener("change",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");var deviceForm=event.target.closest(".spotify-device-form");if(deviceForm){if(event.target.value!==deviceForm.dataset.activeDevice)deviceForm.setAttribute("data-pause-refresh","");else deviceForm.removeAttribute("data-pause-refresh");}});
   document.addEventListener("htmx:beforeRequest", function (event) {
     if(event.detail.elt && event.detail.elt.hasAttribute("data-media-poll") && (document.hidden || document.querySelector(".sheet,[data-pause-refresh]"))){event.preventDefault();return;}

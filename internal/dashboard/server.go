@@ -29,6 +29,8 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	SpotifySearch                                                                                                      spotify.SearchResults
+	SpotifySearchDevice                                                                                                string
 	Spotify                                                                                                            spotify.View
 	SpotifyConfig                                                                                                      spotify.Config
 	SpotifyDraft                                                                                                       bool

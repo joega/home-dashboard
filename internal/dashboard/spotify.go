@@ -2,8 +2,10 @@ package dashboard
 
 import (
 	"context"
+	"errors"
 	"home-dashboard/internal/spotify"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -17,6 +19,10 @@ func (a *App) registerSpotify(mux *http.ServeMux) {
 	mux.HandleFunc("POST /media/spotify/disconnect", a.disconnectSpotify)
 	mux.HandleFunc("POST /media/spotify/command", a.spotifyCommand)
 	mux.HandleFunc("GET /media/spotify/art/{key}", a.spotifyArtwork)
+	mux.HandleFunc("POST /media/spotify/volume", a.spotifyVolume)
+	mux.HandleFunc("GET /media/spotify/search", a.spotifySearchForm)
+	mux.HandleFunc("POST /media/spotify/search", a.spotifySearch)
+	mux.HandleFunc("POST /media/spotify/selection", a.spotifySelection)
 }
 func (a *App) saveSpotify(w http.ResponseWriter, r *http.Request) {
 	cfg := spotify.Config{ClientID: r.Form.Get("client_id"), Redirect: r.Form.Get("redirect")}
@@ -117,4 +123,46 @@ func (a *App) spotifyArtwork(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", kind)
 	w.Header().Set("Cache-Control", "private, max-age=300")
 	w.Write(b)
+}
+
+func (a *App) spotifyVolume(w http.ResponseWriter, r *http.Request) {
+	level, e := strconv.Atoi(r.Form.Get("volume"))
+	if e != nil {
+		e = errors.New("Choose a volume from 0 to 100 in 5% steps")
+	} else {
+		e = a.spotify.SetVolume(r.Context(), r.Form.Get("device_id"), level)
+	}
+	a.mediaReply(w, r, "Volume sent. Checking playback…", e)
+}
+func (a *App) spotifySearchForm(w http.ResponseWriter, r *http.Request) {
+	p := a.base(w, r)
+	p.Spotify = a.spotify.View(time.Now())
+	p.SpotifySearch.Kind = "track"
+	p.SpotifySearchDevice = p.Spotify.State.Device.ID
+	a.render(w, "spotify-search", p)
+}
+func (a *App) spotifySearch(w http.ResponseWriter, r *http.Request) {
+	p := a.base(w, r)
+	p.Spotify = a.spotify.View(time.Now())
+	offset, e := strconv.Atoi(r.Form.Get("offset"))
+	if e != nil {
+		offset = 0
+	}
+	p.SpotifySearch, e = a.spotify.Search(r.Context(), r.Form.Get("q"), r.Form.Get("kind"), offset)
+	if e != nil {
+		p.Error = e.Error()
+	}
+	p.Spotify = a.spotify.View(time.Now())
+	a.render(w, "spotify-search-results", p)
+}
+func (a *App) spotifySelection(w http.ResponseWriter, r *http.Request) {
+	e := a.spotify.PlaySelection(r.Context(), r.Form.Get("device_id"), r.Form.Get("selection"))
+	if e != nil {
+		p := a.base(w, r)
+		p.Error = e.Error()
+		w.Header().Set("HX-Retarget", "#spotify-search-notice")
+		a.render(w, "spotify-search-notice", p)
+		return
+	}
+	a.mediaReply(w, r, "Selection sent. Checking playback…", nil)
 }
