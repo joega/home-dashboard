@@ -36,19 +36,27 @@ shows example saved recipes. Click any screenshot to open it at full size.
 
 <details>
 <summary>More workflows: cooking, people, recurrence, dimming, results and TV status</summary>
-
-| Cooking mode — ingredient and step checklists | People — household profiles |
-| --- | --- |
-| [![Cooking mode — ingredient and step checklists](docs/screenshots/cooking-mode.jpg)](docs/screenshots/cooking-mode.jpg) | [![People — household profiles](docs/screenshots/people.jpg)](docs/screenshots/people.jpg) |
-
-| Recurring events — weekday schedules | Display — night brightness schedule |
-| --- | --- |
-| [![Recurring events — weekday schedules](docs/screenshots/recurring-events.jpg)](docs/screenshots/recurring-events.jpg) | [![Display — night brightness schedule](docs/screenshots/night-dimming.jpg)](docs/screenshots/night-dimming.jpg) |
-
-| Sports — recent results | Devices — TV playback and art mode |
-| --- | --- |
-| [![Sports — recent results](docs/screenshots/sports-results.jpg)](docs/screenshots/sports-results.jpg) | [![Devices — TV playback and art mode](docs/screenshots/devices.jpg)](docs/screenshots/devices.jpg) |
-
+<table>
+<thead><tr><th>Cooking mode — ingredient and step checklists</th><th>People — household profiles</th></tr></thead>
+<tbody><tr>
+<td><a href="docs/screenshots/cooking-mode.jpg"><img src="docs/screenshots/cooking-mode.jpg" alt="Cooking mode — ingredient and step checklists" width="512"></a></td>
+<td><a href="docs/screenshots/people.jpg"><img src="docs/screenshots/people.jpg" alt="People — household profiles" width="512"></a></td>
+</tr></tbody>
+</table>
+<table>
+<thead><tr><th>Recurring events — weekday schedules</th><th>Display — night brightness schedule</th></tr></thead>
+<tbody><tr>
+<td><a href="docs/screenshots/recurring-events.jpg"><img src="docs/screenshots/recurring-events.jpg" alt="Recurring events — weekday schedules" width="512"></a></td>
+<td><a href="docs/screenshots/night-dimming.jpg"><img src="docs/screenshots/night-dimming.jpg" alt="Display — night brightness schedule" width="512"></a></td>
+</tr></tbody>
+</table>
+<table>
+<thead><tr><th>Sports — recent results</th><th>Devices — TV playback and art mode</th></tr></thead>
+<tbody><tr>
+<td><a href="docs/screenshots/sports-results.jpg"><img src="docs/screenshots/sports-results.jpg" alt="Sports — recent results" width="512"></a></td>
+<td><a href="docs/screenshots/devices.jpg"><img src="docs/screenshots/devices.jpg" alt="Devices — TV playback and art mode" width="512"></a></td>
+</tr></tbody>
+</table>
 </details>
 
 ## Develop
