@@ -1,13 +1,13 @@
 # Home HQ
 
-A local household dashboard for the AiMOR wall frame, built with Go, HTML templates, HTMX and SQLite. A compact left-aligned top menu sits inside one translucent surface, with a 12 px outer gap on the frame (8 px on phones) to expose the weather sky. The frame hardware work stays in the separate photo-frame-dashboard project.
+A local household dashboard for the AiMOR wall frame, built with Go, HTML templates, HTMX and SQLite. A compact left-aligned top menu sits inside one translucent surface, with a 12 px outer gap on the frame (8 px on phones) to expose the weather sky. Frame hardware work stays in the separate [photo-frame-dashboard](https://github.com/joega/photo-frame-dashboard) project.
 
 Inspired by [Wes Bos’s photo-frame-dashboard](https://github.com/wesbos/photo-frame-dashboard/),
 with navigation and Cookbook workflow adaptations from
 [Kitchen Frame](https://github.com/huntsyea/kitchen-frame). Provider requests run on
 the server; the frame receives assets and data from one dashboard origin.
 
-Frame access, boot patches and kiosk setup belong in the hardware project. This
+Frame access, boot patches and kiosk setup are documented in the [hardware project](https://github.com/joega/photo-frame-dashboard). This
 web server does not replace a frame’s Android kernel or establish trusted firmware.
 On the PF1007L setup used here, the stock kernel remains and network access is
 restricted to the dashboard endpoint. Keep per-device backups, identifiers and

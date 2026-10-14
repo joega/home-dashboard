@@ -31,7 +31,7 @@ func (p *dashboardMediaProvider) Command(context.Context, media.Device, media.Cr
 }
 func TestMediaPersistenceDHCPAndCredentialIsolation(t *testing.T) {
 	s, _ := testStore(t)
-	d := media.Device{UID: "cast:stable", Host: "192.168.1.38", Name: "Den TV", Kind: "sony", Enabled: true, Cast: true}
+	d := media.Device{UID: "cast:stable", Host: "192.168.50.38", Name: "Den TV", Kind: "sony", Enabled: true, Cast: true}
 	d.ID = media.ID(d.UID)
 	if e := s.MergeMediaDevices([]media.Device{d}); e != nil {
 		t.Fatal(e)
@@ -60,7 +60,7 @@ func TestMediaPersistenceDHCPAndCredentialIsolation(t *testing.T) {
 	d.Aliases = []string{d.UID}
 	d.UID = "airplay:same-tv"
 	d.ID = media.ID(d.UID)
-	d.Host = "192.168.1.41"
+	d.Host = "192.168.50.41"
 	d.Name = "Advertised name"
 	if e := s.MergeMediaDevices([]media.Device{d}); e != nil {
 		t.Fatal(e)
@@ -126,12 +126,12 @@ func TestMediaPersistenceDHCPAndCredentialIsolation(t *testing.T) {
 }
 func TestMediaManualAddressGuards(t *testing.T) {
 	s, _ := testStore(t)
-	for _, host := range []string{"8.8.8.8", "127.0.0.1", "169.254.169.254", "http://192.168.1.1", "192.168.1.1:22"} {
+	for _, host := range []string{"8.8.8.8", "127.0.0.1", "169.254.169.254", "http://192.168.50.1", "192.168.50.1:22"} {
 		if _, e := s.AddMediaDevice(host, "samsung", "TV"); e == nil {
 			t.Fatal(host)
 		}
 	}
-	d, e := s.AddMediaDevice("192.168.1.36", "samsung", "Kitchen TV")
+	d, e := s.AddMediaDevice("192.168.50.36", "samsung", "Kitchen TV")
 	if e != nil {
 		t.Fatal(e)
 	}

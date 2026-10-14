@@ -24,10 +24,10 @@ func (*dashboardSpotifyProvider) Refresh(_ context.Context, c spotify.Credential
 }
 func (p *dashboardSpotifyProvider) Playback(context.Context, spotify.Credential) (spotify.Snapshot, error) {
 	p.calls++
-	return spotify.Snapshot{Title: "<script>song</script>", Device: spotify.Device{ID: "echo", Name: "Joes Echo"}, Playing: true, Fetched: time.Now()}, nil
+	return spotify.Snapshot{Title: "<script>song</script>", Device: spotify.Device{ID: "echo", Name: "Kitchen speaker"}, Playing: true, Fetched: time.Now()}, nil
 }
 func (*dashboardSpotifyProvider) Devices(context.Context, spotify.Credential) ([]spotify.Device, error) {
-	return []spotify.Device{{ID: "echo", Name: "Joes Echo"}}, nil
+	return []spotify.Device{{ID: "echo", Name: "Kitchen speaker"}}, nil
 }
 func (p *dashboardSpotifyProvider) Command(context.Context, spotify.Credential, spotify.Device, string) error {
 	p.commands++
@@ -72,7 +72,7 @@ func TestSpotifyOAuthStateCookieOneUseAndPrivateTokens(t *testing.T) {
 	requests := 0
 	a.spotifyClient.HTTP.Transport = spotifyTransport(func(r *http.Request) (*http.Response, error) {
 		requests++
-		body := `{"id":"joe","display_name":"Joe"}`
+		body := `{"id":"demo-user","display_name":"Alex"}`
 		if r.URL.Path == "/api/token" {
 			r.ParseForm()
 			if spotify.Challenge(r.Form.Get("code_verifier")) != auth.Query().Get("code_challenge") {
@@ -98,7 +98,7 @@ func TestSpotifyOAuthStateCookieOneUseAndPrivateTokens(t *testing.T) {
 		t.Fatal(w.Code, w.Body.String(), requests)
 	}
 	credential, _ := s.SpotifyCredential()
-	if credential.AccountName != "Joe" || credential.RefreshToken != "private-refresh-secret" {
+	if credential.AccountName != "Alex" || credential.RefreshToken != "private-refresh-secret" {
 		t.Fatal("OAuth connection not persisted")
 	}
 	w = httptest.NewRecorder()

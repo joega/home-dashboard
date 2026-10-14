@@ -22,7 +22,7 @@ func TestPKCEAndRedirectGuards(t *testing.T) {
 	if cfg.Validate() != nil {
 		t.Fatal("loopback rejected")
 	}
-	for _, address := range []string{"http://192.168.1.10:4173" + CallbackPath, "http://localhost:4182" + CallbackPath, "http://user@127.0.0.1:4182" + CallbackPath, cfg.Redirect + "?x=1", "http://127.0.0.1:0" + CallbackPath} {
+	for _, address := range []string{"http://192.168.50.10:4173" + CallbackPath, "http://localhost:4182" + CallbackPath, "http://user@127.0.0.1:4182" + CallbackPath, cfg.Redirect + "?x=1", "http://127.0.0.1:0" + CallbackPath} {
 		cfg.Redirect = address
 		if cfg.Validate() == nil {
 			t.Fatal("bad redirect", address)
@@ -72,11 +72,11 @@ func TestClientExchangeRefreshPlaybackAndCommands(t *testing.T) {
 		}
 		switch r.URL.Path {
 		case "/me":
-			io.WriteString(w, `{"id":"joe","display_name":"Joe"}`)
+			io.WriteString(w, `{"id":"demo-user","display_name":"Alex"}`)
 		case "/me/player/devices":
-			io.WriteString(w, `{"devices":[{"id":"echo-1","name":"Joes Echo","type":"Speaker","is_restricted":false,"supports_volume":false,"volume_percent":20}]}`)
+			io.WriteString(w, `{"devices":[{"id":"echo-1","name":"Kitchen speaker","type":"Speaker","is_restricted":false,"supports_volume":false,"volume_percent":20}]}`)
 		case "/me/player":
-			io.WriteString(w, `{"device":{"id":"echo-1","name":"Joes Echo","is_restricted":false,"supports_volume":false},"is_playing":true,"progress_ms":1000,"item":{"name":"A song","duration_ms":180000,"artists":[{"name":"Artist"}],"album":{"name":"Album","images":[{"url":"https://i.scdn.co/image/cover"}]},"external_urls":{"spotify":"https://open.spotify.com/track/song"}},"actions":{"disallows":{"skipping_next":true}}}`)
+			io.WriteString(w, `{"device":{"id":"echo-1","name":"Kitchen speaker","is_restricted":false,"supports_volume":false},"is_playing":true,"progress_ms":1000,"item":{"name":"A song","duration_ms":180000,"artists":[{"name":"Artist"}],"album":{"name":"Album","images":[{"url":"https://i.scdn.co/image/cover"}]},"external_urls":{"spotify":"https://open.spotify.com/track/song"}},"actions":{"disallows":{"skipping_next":true}}}`)
 		}
 	}))
 	defer server.Close()
@@ -85,7 +85,7 @@ func TestClientExchangeRefreshPlaybackAndCommands(t *testing.T) {
 	client.Token = server.URL + "/token"
 	pending := Pending{Verifier: Random(), Redirect: "http://127.0.0.1:4182" + CallbackPath, ClientID: strings.Repeat("a", 32)}
 	credential, e := client.Exchange(context.Background(), pending, "code")
-	if e != nil || credential.AccountName != "Joe" || !credential.CanControl() {
+	if e != nil || credential.AccountName != "Alex" || !credential.CanControl() {
 		t.Fatal(credential, e)
 	}
 	if len(tokenForms) != 1 || tokenForms[0].Get("code_verifier") != pending.Verifier || tokenForms[0].Get("client_secret") != "" {
@@ -96,7 +96,7 @@ func TestClientExchangeRefreshPlaybackAndCommands(t *testing.T) {
 		t.Fatal(updated, e)
 	}
 	s, e := client.Playback(context.Background(), updated)
-	if e != nil || s.Title != "A song" || s.Device.Name != "Joes Echo" || !s.Playing || !s.Disallows["skipping_next"] {
+	if e != nil || s.Title != "A song" || s.Device.Name != "Kitchen speaker" || !s.Playing || !s.Disallows["skipping_next"] {
 		t.Fatal(s, e)
 	}
 	ds, e := client.Devices(context.Background(), updated)
@@ -209,7 +209,7 @@ func (*fakeProvider) Artwork(context.Context, string) ([]byte, string, error) {
 	return nil, "", errors.New("no image")
 }
 func fixture() (*fakeRepo, *fakeProvider) {
-	d := Device{ID: "echo", Name: "Joes Echo", Active: true}
+	d := Device{ID: "echo", Name: "Kitchen speaker", Active: true}
 	r := &fakeRepo{cfg: Config{ClientID: strings.Repeat("a", 32), Redirect: "http://127.0.0.1:4182" + CallbackPath}, c: Credential{AccessToken: "a", RefreshToken: "r", ClientID: strings.Repeat("a", 32), Scope: Scopes, Revision: "revision", Expires: time.Now().Add(time.Hour)}}
 	return r, &fakeProvider{state: Snapshot{Device: d, Title: "Song", Playing: true, Disallows: map[string]bool{}}, ds: []Device{d}}
 }

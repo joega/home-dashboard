@@ -71,7 +71,7 @@ class UpdateTests(unittest.TestCase):
         self.git(self.producer, 'push', 'origin', 'main')
         self.call('git', 'clone', str(self.remote), str(self.repo))
         self.previous = self.git(self.repo, 'rev-parse', 'HEAD').stdout.strip()
-        (self.repo/'.env').write_text('DASHBOARD_BIND_IP=192.168.1.10\n')
+        (self.repo/'.env').write_text('DASHBOARD_BIND_IP=192.168.50.10\n')
         (self.producer/'version').write_text('next')
         self.git(self.producer, 'commit', '-am', 'next')
         self.git(self.producer, 'push', 'origin', 'main')

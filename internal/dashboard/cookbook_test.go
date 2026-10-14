@@ -95,12 +95,12 @@ func TestRecipeSchemaImportAndNetworkGuards(t *testing.T) {
 	if r.Title != "Dinner & rice" || r.Minutes() != 25 || len(r.Steps) != 2 || r.Steps[0] != "Boil water." || r.PhotoURL != "https://recipes.example/meal.jpg" {
 		t.Fatal(r)
 	}
-	for _, u := range []string{"file:///etc/passwd", "http://127.0.0.1/", "http://192.168.1.10/", "http://[::1]/", "https://user:pass@example.com/", "http://localhost/", "http://foo.local/", "http://example.com:8080/"} {
+	for _, u := range []string{"file:///etc/passwd", "http://127.0.0.1/", "http://192.168.50.10/", "http://[::1]/", "https://user:pass@example.com/", "http://localhost/", "http://foo.local/", "http://example.com:8080/"} {
 		if _, e := recipeURL(u); e == nil {
 			t.Fatal("unsafe URL accepted", u)
 		}
 	}
-	for _, v := range []string{"127.0.0.1", "::ffff:192.168.1.10", "10.0.0.1", "169.254.169.254", "100.64.1.1", "0.0.0.2", "64:ff9b::c0a8:0101"} {
+	for _, v := range []string{"127.0.0.1", "::ffff:192.168.50.10", "10.0.0.1", "169.254.169.254", "100.64.1.1", "0.0.0.2", "64:ff9b::c0a8:0101"} {
 		if publicRecipeIP(netip.MustParseAddr(v)) {
 			t.Fatal("private address accepted", v)
 		}
