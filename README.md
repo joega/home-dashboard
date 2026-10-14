@@ -78,7 +78,9 @@ bin/home-dashboard
 
 SQLite defaults to `data/dashboard.sqlite`; entries, people, photos and completion history survive restarts. Existing free-text event/chore owners are migrated to People automatically; Anyone/Household remain unassigned choices. Static assets and time-zone data are embedded in the binary, so rebuild and restart after changing templates, CSS or JavaScript.
 
-## Features
+## Completed features
+
+Available now; implementation details and setup instructions follow below.
 
 - Today: compact agenda rows and two-column summary tiles for pending chores by assignee (including Anyone) and shopping by store (including Any store). Counts include every pending item, not just the first few; chores count only when due on the household date, and picked-up shopping is excluded. Only groups with pending items occupy space. Tap a tile for that person's chores or store's shopping; total links open the full lists. Home weather shows temperature, feels-like, daily high/low and precipitation chance.
 - Calendar: Day with one shared household timeline and person badges, 3 days with date lanes, rolling Week agendas, Month with event dots and day drilldown. Morning, Afternoon and Evening jump through the time grid. Arrows and horizontal swipes move by the selected period. The selected view is remembered in a browser cookie.
@@ -96,7 +98,7 @@ SQLite defaults to `data/dashboard.sqlite`; entries, people, photos and completi
 - Media: local Sony BRAVIA, Samsung TV and Google Cast discovery with distinct network availability, native power and app-reported playback. Add, rename or hide devices in Settings → Media. Optional Sony pre-shared-key or Samsung on-TV approval unlocks only play, pause, volume and mute. Samsung Frame Art Mode is checked after pairing where supported. No Home Assistant is required. Per-person Spotify connections add independent player cards with now-playing artwork, progress, available Connect devices, song/album search and bounded music controls. Device restrictions and unavailable volume controls are shown explicitly.
 - Fonts, scripts, sky scenes and weather data are served to the frame from the dashboard origin. The server contacts Open-Meteo for weather and changed-ZIP resolution; the frame needs no external network access. Source adaptation notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Calendar-provider synchronization, weather on calendar events and animation are deferred. Container packaging is prepared for review; final deployment remains separate. Data is local to this server; this first version has no authentication and should stay on a trusted private network. The frame's restricted network policy does not protect other clients accessing this server.
+Docker/Compose packaging, server update tooling and idle client reloads are implemented. Data stays local to the server; the app has no authentication and should stay on a trusted private network. The frame's restricted network policy does not protect other clients accessing this server.
 
 Monthly/yearly rules use the last day of a shorter month when the start day does not exist (for example, January 31 → February 28). Selected-day intervals use Monday-based weeks anchored to the start date. Recurrences retain local wall-clock times; an occurrence at a nonexistent daylight-saving time is skipped. Start and end dates are inclusive. Existing daily chores are migrated without changing their completion history.
 
@@ -130,17 +132,37 @@ Archiving a person hides their player and pauses polling while preserving data.
 
 ## Roadmap
 
-- Personal chore charts and completion streaks using the activity records; possible games with per-person scores later.
+Completed work is listed under [Completed features](#completed-features). The items
+below are still planned or exploratory; their order does not set release priority.
 
-### Weather
+### Planned
 
-The static background, Today widget, home ZIP/units settings and persistent forecast cache are implemented. New databases use sample ZIP 10001 (New York, NY); updates keep existing saved weather settings. Calendar forecast badges remain deferred until events support explicit weather locations; their foundation can use the cached hourly/daily forecast without separate requests per event. Animation remains deferred until responsiveness and rendering cost have been measured on the physical frame; retain static fallback and an off control.
+- **Sticky notes:** a shared board for household messages and notes for each other.
+- **Chore charts and rewards:** completion totals by person and day/month/year,
+  streaks and family-friendly progress displays using the existing activity history.
+- **Calendar integrations:** external calendar synchronization and more robust event
+  locations, followed by forecast badges for individual events.
+- **Cookbook improvements:** a dinner-picker wheel, serving scaling, automatic
+  ingredient merging, handwritten-recipe OCR and additional formats such as Cooklang.
+- **Sports improvements:** calendar game overlays and richer game details.
 
-### Cookbook
+### Deferred / exploratory
 
-The first complete Cookbook is implemented. The random dinner picker precedes a possible wheel animation. Serving scaling, automatic ingredient merging, OCR of handwritten recipes and additional formats such as Cooklang remain future work. Saved recipes are local and survive provider outages; browser checklists are device-specific and reset when recipe content changes. TheMealDB recipes do not always supply timings or servings, so those fields are labeled missing rather than inferred from the title.
+- **Animated weather:** first measure responsiveness and rendering cost on the
+  physical frame; keep a static fallback and an off switch.
+- **Home status:** optional Home Assistant-backed, status-only views of supported
+  devices. Wait for a separately configured Home Assistant installation and review
+  actual upstream permissions. Heating control, door unlocking and general device
+  automations stay outside the plan. See the [integration boundaries](DEPLOYMENT.md#planned-home-status-integration).
+- **Cooking timers and Echo announcements:** a separate, explicitly approved output
+  path after the required integration is available, with a fixed speaker, bounded
+  messages and quiet hours. Usable frame-speaker volume remains unconfirmed.
+- **Presence-aware screen-off and wake:** needs a verified room-presence signal and
+  reliable wake path. The bezel sensor has not been verified as a motion detector.
+- **Games and high scores:** a possible later section using household profiles and
+  per-person scores.
 
-### Media
+## Media and TV setup
 
 Open Media to discover TVs and Google Cast devices. Discovery uses mDNS/SSDP every
 five minutes, with a manual scan button; status is polled every 15 seconds and the
@@ -238,59 +260,7 @@ Test on the laptop first, then connect once on the server after deploying; do no
 replace a production household database with preview data. See
 [server login through SSH](DEPLOYMENT.md#spotify-login-on-the-server).
 
-### Home status / Echo information (planned; waiting for Home Assistant)
-
-Deferred until Home Assistant is installed and running on the eventual dashboard
-server. Home status views remain **status-only**, including thermostat, lock and cameras.
-Media is a separate, explicitly requested exception for bounded TV playback and
-volume controls after optional pairing.
-Children using the frame must not be able to change device settings. Existing
-Calendar, Chores, Shopping and Cookbook edits remain household dashboard features;
-this restriction applies to Home status commands, not the separately approved
-Media controls.
-
-First verify compatible integrations and their actual permissions. The standard
-[Nest integration](https://www.home-assistant.io/integrations/nest/#sensor) requires
-thermostat access-and-control permission even for temperature/humidity sensors;
-a monitoring screen does not make its upstream credentials read-only. Do not pair
-the thermostat or lock merely to obtain data until this tradeoff has been reviewed.
-Home Assistant user permissions and Docker isolation are useful layers, not a
-universal read-only mode for integrations, background tasks or a compromised server.
-
-The Go backend will expose only bounded, allowlisted device-state snapshots and
-approved image views. No general Home Assistant API proxy, service calls, device
-setting forms, free-form Alexa commands or frame-accessible administrator session.
-Credentials stay on the server, outside Git and browser storage. Use and verify a
-read-only Home Assistant identity where supported; non-admin status alone is not
-read-only. Before connecting real devices, test denied control requests against
-virtual test entities and verify that modified frame requests cannot reach a device
-command. Isolate the Home Assistant service from the frame and public internet;
-keep the frame limited to its existing dashboard IP/port.
-
-A truly read-only upstream connection must be supported by the device/provider.
-Otherwise leave that device out, or separately review a credential-isolated gateway
-that publishes only snapshots. Do not promise that a container or ordinary network
-firewall can distinguish reads from writes inside an encrypted cloud API connection.
-No device automations, heating control or door unlocking are planned.
-
-[Kitchen Frame's Music view](https://github.com/huntsyea/kitchen-frame/blob/main/dashboard/src/views/Music.svelte)
-remains a visual reference for now-playing artwork and room selection. Spotify
-connection provides bounded music controls on API-supported devices; no Music Assistant or general
-Alexa API is included. Cooking timer
-announcements on the kitchen Echo would be a separate, explicitly approved output
-path with a fixed speaker, bounded messages and quiet hours. They are not part of
-strict status-only mode and must not enable general Alexa commands.
-
-A PF1007L check on October 13, 2026 found an `audiocodec` ALSA device and Android
-speaker routes. A temporary native tone test completed 0.6-second and one-second
-PCM playback at media levels 1/8 and 2/8, with further amplitude attenuation. The
-first was inaudible; the owner possibly heard the second very faintly. AudioTrack
-consumed all samples, but usable physical speaker loudness is not yet conclusively
-verified. Media volume was restored to its previous value and the temporary payload
-removed; no kiosk change was needed. Timer sounds remain conditional on a clearer
-speaker check. Local frame sound is separate from controlling music on an Echo.
-
-### Sports
+## Sports details
 
 Sports supports all 174 current teams in the bundled MLB, NHL, NBA, NFL, MLS and
 Premier League catalogs. Settings → Sports includes instant local search and a
@@ -354,13 +324,30 @@ relegated EPL clubs) so it cannot silently discard saved household selections.
 A changed roster size or unknown NHL mapping requires explicit maintainer review.
 The catalog snapshot is dated in `internal/sports/catalog.json`.
 
-Calendar game overlays and richer game details remain future choices.
+## Frame display and audio
 
-### Night display and presence
+Automatic light/dark appearance, scheduled night backlight dimming and optional
+touch-inactivity dimming are implemented. The PF1007L exposes ambient-light,
+acceleration and temperature sensors, but no verified room-presence signal.
+Full screen-off and motion wake remain on the deferred roadmap. Light changes or
+frame acceleration must not be treated as room motion. A dark webpage alone does
+not lower the LCD backlight.
 
-Automatic dark colors and configurable native night backlight dimming are implemented. Optional touch-inactivity dimming is also available. Full screen-off after a longer timeout and motion wake remain deferred: the PF1007L currently exposes ambient-light, acceleration and temperature sensors but no verified room-presence signal. Do not infer motion from light changes or frame acceleration. Investigate a genuine sensor interface or a future external presence integration before enabling screen-off. A dark webpage alone does not lower the LCD backlight.
+A PF1007L check on October 13, 2026 found an `audiocodec` ALSA device and Android
+speaker routes. A temporary native tone test completed 0.6-second and one-second
+PCM playback at media levels 1/8 and 2/8, with further amplitude attenuation. The
+first was inaudible; the owner possibly heard the second very faintly. AudioTrack
+consumed all samples, but usable physical speaker loudness is not yet conclusively
+verified. Media volume was restored to its previous value and the temporary payload
+removed; no kiosk change was needed. Timer sounds remain conditional on a clearer
+speaker check. Local frame sound is separate from controlling music on an Echo.
 
 ## Recipe imports and discovery
+
+Saved recipes are local and survive provider outages. Browser cooking checklists
+are device-specific and reset when recipe content changes. TheMealDB recipes do
+not always supply timings or servings; missing fields are labeled rather than
+inferred from the title.
 
 [Schema.org Recipe](https://schema.org/Recipe) JSON-LD is the portable format used
 for import/export. URL import reads this metadata without executing site scripts;

@@ -415,3 +415,46 @@ instead. The local and server databases have independent connections. Do not cop
 a preview database over the deployed household database just to move OAuth tokens.
 Register both URIs if you want to test on the laptop and then authorize production.
 The frame remains restricted to the existing dashboard IP/port.
+
+## Planned home-status integration
+
+Deferred until Home Assistant is installed and running on the eventual dashboard
+server. Home status views remain **status-only**, including thermostat, lock and cameras.
+Media is a separate, explicitly requested exception for bounded TV playback and
+volume controls after optional pairing.
+Children using the frame must not be able to change device settings. Existing
+Calendar, Chores, Shopping and Cookbook edits remain household dashboard features;
+this restriction applies to Home status commands, not the separately approved
+Media controls.
+
+First verify compatible integrations and their actual permissions. The standard
+[Nest integration](https://www.home-assistant.io/integrations/nest/#sensor) requires
+thermostat access-and-control permission even for temperature/humidity sensors;
+a monitoring screen does not make its upstream credentials read-only. Do not pair
+the thermostat or lock merely to obtain data until this tradeoff has been reviewed.
+Home Assistant user permissions and Docker isolation are useful layers, not a
+universal read-only mode for integrations, background tasks or a compromised server.
+
+The Go backend will expose only bounded, allowlisted device-state snapshots and
+approved image views. No general Home Assistant API proxy, service calls, device
+setting forms, free-form Alexa commands or frame-accessible administrator session.
+Credentials stay on the server, outside Git and browser storage. Use and verify a
+read-only Home Assistant identity where supported; non-admin status alone is not
+read-only. Before connecting real devices, test denied control requests against
+virtual test entities and verify that modified frame requests cannot reach a device
+command. Isolate the Home Assistant service from the frame and public internet;
+keep the frame limited to its existing dashboard IP/port.
+
+A truly read-only upstream connection must be supported by the device/provider.
+Otherwise leave that device out, or separately review a credential-isolated gateway
+that publishes only snapshots. Do not promise that a container or ordinary network
+firewall can distinguish reads from writes inside an encrypted cloud API connection.
+No device automations, heating control or door unlocking are planned.
+
+[Kitchen Frame's Music view](https://github.com/huntsyea/kitchen-frame/blob/main/dashboard/src/views/Music.svelte)
+remains a visual reference for now-playing artwork and room selection. Spotify
+connection provides bounded music controls on API-supported devices; no Music Assistant or general
+Alexa API is included. Cooking timer
+announcements on the kitchen Echo would be a separate, explicitly approved output
+path with a fixed speaker, bounded messages and quiet hours. They are not part of
+strict status-only mode and must not enable general Alexa commands.
