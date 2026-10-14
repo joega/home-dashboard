@@ -17,6 +17,8 @@
 **/.env.*
 **/*.sqlite
 **/*.sqlite-*
+**/*.db
+**/*.db-*
 **/*.keystore
 **/*.jks
 **/*.pem

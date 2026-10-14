@@ -370,3 +370,40 @@ Pairing credentials are private SQLite data and are included in database backups
 Keep host directories, volumes and backup files private. Never publish the
 container port to the internet. The frame's single dashboard-IP/port firewall does
 not need to change for Media: all TV protocol traffic originates from this server.
+
+## Spotify login on the server
+
+No new container ports, environment secrets, Docker permissions or network profile
+are needed for Spotify. The Go server makes ordinary outbound HTTPS requests using
+the existing CA bundle. Its account tokens persist in the household SQLite volume,
+so normal automatic updates preserve the connection.
+
+Spotify does not accept a plain-HTTP LAN callback. Keep the deployed dashboard at
+`192.168.1.10:4173`; use a temporary laptop loopback tunnel only for account login.
+After deploying the Spotify connector, register this URI in your Spotify developer
+app and use it as the callback in the server's Settings → Media:
+
+```text
+http://127.0.0.1:4184/media/spotify/callback
+```
+
+On the laptop, keep this SSH command running during login:
+
+```sh
+ssh -N -L 127.0.0.1:4184:192.168.1.10:4173 joeg@192.168.1.10
+```
+
+Open `http://127.0.0.1:4184/settings?section=media` in your browser, save your public
+Client ID and that callback, select Connect Spotify and approve the permissions in
+that same browser. The callback passes through SSH to Mighty: tokens are stored in
+Mighty's database, not on the laptop. After Media shows the account and current
+playback, end SSH with Ctrl-C. No router forwarding, public hostname or permanently
+running tunnel is required. Future token refresh happens directly on Mighty; an
+explicit reconnect would use the tunnel again. These instructions assume SSH access
+is already configured; do not broaden SSH/Docker privileges merely for login.
+
+For a local Go preview at port 4182, use its separate registered loopback callback
+instead. The local and server databases have independent connections. Do not copy
+a preview database over the deployed household database just to move OAuth tokens.
+Register both URIs if you want to test on the laptop and then authorize production.
+The frame remains restricted to the existing dashboard IP/port.

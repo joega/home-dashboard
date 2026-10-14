@@ -72,6 +72,10 @@ func Open(path string, demo bool, today string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
+	if err := s.migrateSpotify(); err != nil {
+		db.Close()
+		return nil, err
+	}
 	if err := s.migrateMedia(); err != nil {
 		db.Close()
 		return nil, err

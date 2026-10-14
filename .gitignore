@@ -6,6 +6,8 @@
 /backups/
 *.sqlite
 *.sqlite-*
+*.db
+*.db-*
 
 # Local credentials and private assets
 .env

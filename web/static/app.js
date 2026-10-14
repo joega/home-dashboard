@@ -262,7 +262,7 @@
     else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first.focus();}
   });
   document.addEventListener("input",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");});
-  document.addEventListener("change",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");});
+  document.addEventListener("change",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");var deviceForm=event.target.closest(".spotify-device-form");if(deviceForm){if(event.target.value!==deviceForm.dataset.activeDevice)deviceForm.setAttribute("data-pause-refresh","");else deviceForm.removeAttribute("data-pause-refresh");}});
   document.addEventListener("htmx:beforeRequest", function (event) {
     if(event.detail.elt && event.detail.elt.hasAttribute("data-media-poll") && (document.hidden || document.querySelector(".sheet,[data-pause-refresh]"))){event.preventDefault();return;}
     var scroller = document.querySelector(".list-scroll");
@@ -289,7 +289,7 @@
   if(document.fonts && document.fonts.ready)document.fonts.ready.then(layoutMenus);
   setInterval(tick, 1000);
   setInterval(function () {
-    if (document.hidden || document.querySelector(".sheet,[data-pause-refresh],.cookbook-page") || document.querySelector(".htmx-request") || !window.htmx) return;
+    if (document.hidden || document.querySelector(".sheet,[data-pause-refresh],.cookbook-page,[data-spotify-connected]") || document.querySelector(".htmx-request") || !window.htmx) return;
     htmx.ajax("GET", location.pathname + location.search, {target:"#content",swap:"innerHTML"});
   }, 30000);
 })();

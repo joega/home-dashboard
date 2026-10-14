@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"home-dashboard/internal/media"
 	"home-dashboard/internal/sports"
+	"home-dashboard/internal/spotify"
 	"home-dashboard/internal/weather"
 	"home-dashboard/web"
 	"html/template"
@@ -28,6 +29,9 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	Spotify                                                                                                            spotify.View
+	SpotifyConfig                                                                                                      spotify.Config
+	SpotifyDraft                                                                                                       bool
 	MediaDraft                                                                                                         media.Device
 	Media                                                                                                              media.View
 	MediaDevices                                                                                                       []media.Device
@@ -84,15 +88,17 @@ type Row struct {
 	CSRF, Return string
 }
 type App struct {
-	media        *media.Service
-	recipeClient *http.Client
-	weather      *weather.Service
-	sports       *sports.Service
-	store        *Store
-	loc          *time.Location
-	templates    *template.Template
-	handler      http.Handler
-	version      string
+	spotify       *spotify.Service
+	spotifyClient *spotify.Client
+	media         *media.Service
+	recipeClient  *http.Client
+	weather       *weather.Service
+	sports        *sports.Service
+	store         *Store
+	loc           *time.Location
+	templates     *template.Template
+	handler       http.Handler
+	version       string
 }
 
 func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App, error) {
@@ -154,6 +160,8 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	a.sports = sports.NewService(store, sports.NewClient(), loc)
 	mediaClient := media.NewClient()
 	a.media = media.NewService(store, mediaClient, media.LAN{Client: mediaClient})
+	a.spotifyClient = spotify.NewClient()
+	a.spotify = spotify.NewService(store, a.spotifyClient)
 	a.recipeClient = recipeHTTPClient()
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(assets))))
@@ -192,6 +200,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("POST /stores/{id}/status", a.shopStatus)
 	a.registerCookbook(mux)
 	a.registerMedia(mux)
+	a.registerSpotify(mux)
 	a.handler = a.protect(mux)
 	return a, nil
 }
@@ -201,7 +210,7 @@ func (a *App) protect(next http.Handler) http.Handler {
 	return cross.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "same-origin")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self' https://accounts.spotify.com; object-src 'none'")
 		w.Header().Set("Cache-Control", "no-store")
 		if r.Method != "GET" && r.Method != "HEAD" {
 			var parseErr error
@@ -337,6 +346,13 @@ func (a *App) load(p *Page, q url.Values) error {
 	}
 	if p.View == "media" || p.View == "settings" {
 		p.Media = a.media.View(p.Now)
+		p.Spotify = a.spotify.View(p.Now)
+		if !p.SpotifyDraft {
+			p.SpotifyConfig, err = a.store.SpotifyConfig()
+			if err != nil {
+				return err
+			}
+		}
 		p.MediaDevices, err = a.store.MediaDevices()
 		if err != nil {
 			return err
