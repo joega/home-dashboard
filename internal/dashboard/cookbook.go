@@ -106,10 +106,11 @@ func (a *App) cookbookLibrary(w http.ResponseWriter, r *http.Request) {
 	p.RecipeCount = len(filtered)
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	page = max(1, page)
-	last := max(1, (len(filtered)+11)/12)
+	const pageSize = 50
+	last := max(1, (len(filtered)+pageSize-1)/pageSize)
 	page = min(page, last)
-	start := (page - 1) * 12
-	p.Recipes = filtered[start:min(start+12, len(filtered))]
+	start := (page - 1) * pageSize
+	p.Recipes = filtered[start:min(start+pageSize, len(filtered))]
 	pageURL := func(n int) string {
 		u, _ := url.Parse(p.RecipeReturn)
 		q := u.Query()
