@@ -55,7 +55,7 @@ func TestForecastPageLinksDayNavigationAndCacheOnlyReads(t *testing.T) {
 		t.Fatal("Today strip is not a forecast link")
 	}
 	full := get("/weather", false).Body.String()
-	for _, want := range []string{"<title>Home HQ · Weather</title>", `class="nav-item selected" aria-current="page">Weather</a>`, "Next 24 hours", "7-day forecast", "Wind now", `aria-label="Weather settings"`, `data-forecast-scroll=`} {
+	for _, want := range []string{"<title>Home HQ · Weather</title>", `class="nav-item selected" aria-current="page" aria-label="Weather">`, "Next 24 hours", "7-day forecast", "Wind now", `aria-label="Weather settings"`, `data-forecast-scroll=`} {
 		if !strings.Contains(full, want) {
 			t.Fatal("missing forecast detail", want)
 		}

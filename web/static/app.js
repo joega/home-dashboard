@@ -93,6 +93,59 @@
     var start=form.querySelector("[data-chore-start]");if(start)start.required=!!value;
   }
   document.addEventListener("change",function(event){if(event.target.matches("[data-repeat]"))configureSchedule();});
+  var menuTooltipTrigger = null, menuTooltipTimer = 0, menuTouchUntil = 0;
+  function hideMenuTooltip() {
+    clearTimeout(menuTooltipTimer);
+    var tip = document.getElementById("section-tooltip");
+    if (tip) tip.hidden = true;
+    if (menuTooltipTrigger) menuTooltipTrigger.removeAttribute("aria-describedby");
+    menuTooltipTrigger = null;
+  }
+  function showMenuTooltip(link) {
+    clearTimeout(menuTooltipTimer);
+    if (performance.now() < menuTouchUntil || document.querySelector(".sheet")) return;
+    var tip = document.getElementById("section-tooltip");
+    if (!tip) return;
+    if (menuTooltipTrigger && menuTooltipTrigger !== link) menuTooltipTrigger.removeAttribute("aria-describedby");
+    menuTooltipTrigger = link;
+    tip.textContent = link.getAttribute("aria-label");
+    tip.hidden = false;
+    link.setAttribute("aria-describedby", tip.id);
+    var box = link.getBoundingClientRect(), width = tip.offsetWidth, height = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(box.left + (box.width - width) / 2, window.innerWidth - width - 8)) + "px";
+    var top = box.bottom + 8;
+    if (top + height > window.innerHeight - 8) top = box.top - height - 8;
+    tip.style.top = Math.max(8, top) + "px";
+  }
+  function leaveMenuTooltip(event) {
+    var link = event.target.closest(".topbar .nav-item"), tip = document.getElementById("section-tooltip");
+    if ((!link || link !== menuTooltipTrigger) && event.target !== tip) return;
+    var next = event.relatedTarget;
+    if (next && ((link && link.contains(next)) || (tip && tip.contains(next)))) return;
+    // The small gap below an icon must not close the tooltip while entering it.
+    clearTimeout(menuTooltipTimer);
+    menuTooltipTimer = setTimeout(hideMenuTooltip, 120);
+  }
+  document.addEventListener("mouseover", function(event) {
+    var link = event.target.closest(".topbar .nav-item");
+    if (link && (!event.relatedTarget || !link.contains(event.relatedTarget))) showMenuTooltip(link);
+    else if (event.target.closest("#section-tooltip")) clearTimeout(menuTooltipTimer);
+  });
+  document.addEventListener("mouseout", leaveMenuTooltip);
+  document.addEventListener("focusin", function(event) {
+    var link = event.target.closest(".topbar .nav-item");
+    if (link) showMenuTooltip(link);
+  });
+  document.addEventListener("focusout", leaveMenuTooltip);
+  function touchMenu() { menuTouchUntil = performance.now() + 1500; hideMenuTooltip(); }
+  document.addEventListener("touchstart", touchMenu, {passive:true});
+  document.addEventListener("pointerdown", function(event) { if (event.pointerType === "touch" || event.pointerType === "pen") touchMenu(); });
+  document.addEventListener("click", hideMenuTooltip);
+  document.addEventListener("keydown", function(event) { if (event.key === "Escape") hideMenuTooltip(); });
+  document.addEventListener("scroll", hideMenuTooltip, true);
+  document.addEventListener("htmx:beforeSwap", hideMenuTooltip);
+  window.addEventListener("resize", hideMenuTooltip);
+  window.addEventListener("blur", hideMenuTooltip);
   var boundMenus = new WeakSet(), menuPositions = new Map();
   function menuKey(track) {
     var current = track.querySelector('[aria-current]');
@@ -105,9 +158,11 @@
     var back = shell.querySelector('[data-menu-step="back"]'), next = shell.querySelector('[data-menu-step="next"]');
     // Buttons share the row, so settle their visibility after they resize the
     // track. Never reserve space when every item already fits.
+    var links = track.querySelectorAll('a');
     for (var pass = 0; pass < 2; pass++) {
-      back.hidden = track.scrollLeft <= 2;
-      next.hidden = track.scrollWidth - track.clientWidth - track.scrollLeft <= 2;
+      var box = track.getBoundingClientRect();
+      back.hidden = !links.length || links[0].getBoundingClientRect().left >= box.left - 2;
+      next.hidden = !links.length || links[links.length - 1].getBoundingClientRect().right <= box.right + 2;
     }
   }
   function configureMenuScroll() {

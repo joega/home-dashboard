@@ -428,3 +428,14 @@ body[data-theme=dark] .note-footer,body[data-theme=dark] .note-pin{color:#c5cec5
 .note-form .note-color-choice{margin:0;font-weight:500}
 .note-form .note-color-choice input{padding:0!important;height:16px;flex-shrink:0}
 .note-form .form-actions{margin-top:20px}
+
+/* Icon navigation keeps only the current section's label visible. */
+.topbar .nav-item{flex:0 0 auto;min-width:48px;min-height:48px;padding:10px 12px;gap:8px;font:500 15px/1.3 var(--sans)}
+.topbar .nav-item svg{width:22px;height:22px;flex-shrink:0}
+.topbar .nav-item .nav-label{display:none;position:static;width:auto;height:auto;overflow:visible;clip:auto;white-space:nowrap}
+.topbar .nav-item[aria-current=page] .nav-label{display:inline}
+.topbar .nav-scroll-shell nav{scrollbar-width:none}
+.topbar .nav-scroll-shell nav::-webkit-scrollbar{display:none}
+.section-tooltip{position:fixed;z-index:60;padding:7px 10px;max-width:calc(100vw - 16px);border-radius:6px;background:var(--ink);color:var(--paper);font:500 12px/1.4 var(--sans);box-shadow:0 2px 8px #0002;overflow-wrap:break-word}
+.section-tooltip[hidden]{display:none}
+@media(max-width:700px){.topbar .nav-item{min-width:44px;min-height:44px;padding:10px;gap:7px;font-size:13px}}

@@ -79,3 +79,17 @@ is a friendly address, not a privacy boundary. Open editors pause background
 refreshes. Conflicting edits retain the unsaved draft and offer an explicit way
 to load the latest saved version. Dragging, corkboard textures, animation and
 automatic expiry are outside this first version.
+
+
+## Active-label navigation
+
+The icon menu supersedes the earlier text tabs. Keep all nine sections in their
+existing order with locally defined SVG icons; only the current section displays
+its text label. Inactive icons retain explicit accessible names. Buttons measure
+at least 48 px on the frame and 44 px on phones. Hover and keyboard focus show a
+small tooltip outside the scrolling track without moving neighboring links;
+Escape, a tap, navigation or scrolling dismisses it. Touch navigation is immediate
+and does not wait for a hold. Preserve the current-person button, clock and
+Settings on the right. Overflow arrows appear only when needed, and the selected
+section stays visible on navigation and resize. The native scrollbar is hidden
+for this menu; touch scrolling and the arrow controls remain available.

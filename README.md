@@ -1,6 +1,6 @@
 # Home HQ
 
-A local household dashboard for the AiMOR wall frame, built with Go, HTML templates, HTMX and SQLite. A compact left-aligned top menu sits inside one translucent surface, with a 12 px outer gap on the frame (8 px on phones) to expose the weather sky. Frame hardware work stays in the separate [photo-frame-dashboard](https://github.com/joega/photo-frame-dashboard) project.
+A local household dashboard for the AiMOR wall frame, built with Go, HTML templates, HTMX and SQLite. A compact left-aligned icon menu keeps the current section’s label visible, with hover/keyboard tooltips and scrolling arrows when needed. It sits inside one translucent surface, with a 12 px outer gap on the frame (8 px on phones) to expose the weather sky. Frame hardware work stays in the separate [photo-frame-dashboard](https://github.com/joega/photo-frame-dashboard) project.
 
 Inspired by [Wes Bos’s photo-frame-dashboard](https://github.com/wesbos/photo-frame-dashboard/),
 with navigation and Cookbook workflow adaptations from
