@@ -55,6 +55,7 @@ func (s *Store) migratePeople() error {
 		`CREATE TABLE IF NOT EXISTS people(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL COLLATE NOCASE UNIQUE,active INTEGER NOT NULL DEFAULT 1,photo BLOB)`,
 		`CREATE TABLE IF NOT EXISTS chore_history(id INTEGER PRIMARY KEY AUTOINCREMENT,entry_key TEXT NOT NULL,entry_id INTEGER NOT NULL,cycle TEXT NOT NULL,day TEXT NOT NULL,completed_at TEXT NOT NULL,person_id INTEGER REFERENCES people(id),person_name TEXT NOT NULL,title TEXT NOT NULL,UNIQUE(entry_key,cycle))`,
 		`CREATE INDEX IF NOT EXISTS chore_history_person_day ON chore_history(person_id,day)`,
+		`CREATE INDEX IF NOT EXISTS chore_history_day_person ON chore_history(day,person_id)`,
 	} {
 		if _, err = tx.Exec(q); err != nil {
 			return err

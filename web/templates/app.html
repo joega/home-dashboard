@@ -14,6 +14,7 @@
 <symbol id="i-tick" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
 <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 3h6l-1 7 4 3v2H6v-2l4-3-1-7ZM12 15v7"/></symbol>
 <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v13h14V8M10 12h4"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></symbol>
 <symbol id="i-note" viewBox="0 0 24 24"><path d="M14 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9l-7 7Z"/><path d="M14 21v-7h7"/></symbol>
 <symbol id="i-weather" viewBox="0 0 24 24"><path d="M12 3V1M5.6 5.6 4.2 4.2M3 12H1M18.4 5.6l1.4-1.4"/><path d="M8 14a5 5 0 1 1 9-4"/><path d="M8 21a4 4 0 1 1 1-7.9 5 5 0 0 1 9.7 1.9H19a3 3 0 0 1 0 6Z"/></symbol>
 <symbol id="i-sports" viewBox="0 0 24 24"><path d="M8 3h8v5a4 4 0 0 1-8 0V3ZM12 12v6M8 21h8M10 18h4v3M8 5H4v2a4 4 0 0 0 4 4M16 5h4v2a4 4 0 0 1-4 4"/></symbol>
@@ -40,7 +41,7 @@
 <div class="nav-scroll-shell" data-scroll-menu><button type="button" class="menu-scroll-button" data-menu-step="back" aria-label="Show previous sections" aria-controls="sections-track" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><nav id="sections-track" data-menu-track aria-label="Sections" hx-boost="true" hx-target="#content" hx-swap="innerHTML">
 <a href="/" class="nav-item {{if eq .View "today"}}selected{{end}}" {{if eq .View "today"}}aria-current="page"{{end}} aria-label="Today"><svg aria-hidden="true"><use href="#i-home"/></svg><span class="nav-label">Today</span></a>
 <a href="/calendar" class="nav-item {{if eq .View "calendar"}}selected{{end}}" {{if eq .View "calendar"}}aria-current="page"{{end}} aria-label="Calendar"><svg aria-hidden="true"><use href="#i-calendar"/></svg><span class="nav-label">Calendar</span></a>
-<a href="/chores" class="nav-item {{if eq .View "chores"}}selected{{end}}" {{if eq .View "chores"}}aria-current="page"{{end}} aria-label="Chores"><svg aria-hidden="true"><use href="#i-check"/></svg><span class="nav-label">Chores</span></a>
+<a href="/chores" class="nav-item {{if or (eq .View "chores") (eq .View "chore-charts")}}selected{{end}}" {{if or (eq .View "chores") (eq .View "chore-charts")}}aria-current="page"{{end}} aria-label="Chores"><svg aria-hidden="true"><use href="#i-check"/></svg><span class="nav-label">Chores</span></a>
 <a href="/shopping" class="nav-item {{if eq .View "shopping"}}selected{{end}}" {{if eq .View "shopping"}}aria-current="page"{{end}} aria-label="Shopping"><svg aria-hidden="true"><use href="#i-cart"/></svg><span class="nav-label">Shopping</span></a>
 <a href="/notes" class="nav-item {{if or (eq .View "notes") (eq .View "note")}}selected{{end}}" {{if or (eq .View "notes") (eq .View "note")}}aria-current="page"{{end}} aria-label="Notes"><svg aria-hidden="true"><use href="#i-note"/></svg><span class="nav-label">Notes</span></a>
 <a href="/weather" class="nav-item {{if eq .View "weather"}}selected{{end}}" {{if eq .View "weather"}}aria-current="page"{{end}} aria-label="Weather"><svg aria-hidden="true"><use href="#i-weather"/></svg><span class="nav-label">Weather</span></a>
@@ -54,7 +55,8 @@
 {{define "clock"}}<time id="clock" class="clock" data-now="{{.Now.UnixMilli}}" data-zone="{{.Zone}}" hx-get="/clock" hx-trigger="every 60s" hx-swap="outerHTML">{{clock .Now}}</time>{{end}}
 {{define "content"}}
 <span id="weather-scene-state" hidden data-scene="{{.Weather.Scene}}" data-theme="{{.Weather.Theme}}"></span>
-{{if and (ne .View "calendar") (ne .View "today")}}<header class="page-header{{if eq .View "weather"}} weather-page-header{{end}}{{if or (eq .View "notes") (eq .View "note")}} notes-page-header{{end}}"><h1>{{.Title}}</h1><div class="header-actions">
+{{if and (ne .View "calendar") (ne .View "today")}}<header class="page-header{{if eq .View "chore-charts"}} chore-charts-header{{end}}{{if eq .View "weather"}} weather-page-header{{end}}{{if or (eq .View "notes") (eq .View "note")}} notes-page-header{{end}}"><h1>{{.Title}}</h1><div class="header-actions">
+{{if eq .View "chore-charts"}}<a class="button outline" href="/chores" hx-boost="true" hx-target="#content">Chores <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>{{end}}
 {{if eq .View "notes"}}<button class="button" hx-get="/notes/new/edit" hx-target="#drawer"><svg><use href="#i-plus"/></svg>New note</button>{{end}}
 {{if eq .View "note"}}{{if not .Note.Archived}}<button class="button" hx-get="/notes/{{.Note.ID}}/edit?return={{urlquery .Return}}" hx-target="#drawer"><svg><use href="#i-edit"/></svg>Edit note</button>{{end}}{{end}}
 {{if eq .View "weather"}}<a class="icon-button" href="/settings?section=weather" hx-boost="true" hx-target="#content" aria-label="Weather settings" title="Weather settings"><svg><use href="#i-settings"/></svg></a>{{end}}
@@ -64,12 +66,13 @@
 {{if eq .View "shopping"}}<button class="button" hx-get="/forms/shopping/new?return={{urlquery .Return}}" hx-target="#drawer"><svg><use href="#i-plus"/></svg>Add item</button>{{end}}
 </div></header>{{end}}
 {{if eq .View "today"}}{{template "today" .}}{{end}}{{if eq .View "calendar"}}{{template "calendar" .}}{{end}}{{if eq .View "chores"}}{{template "chores" .}}{{end}}{{if eq .View "shopping"}}{{template "shopping" .}}{{end}}
+{{if eq .View "chore-charts"}}{{template "chore-charts" .}}{{end}}
 {{if eq .View "notes"}}{{template "notes-board" .}}{{else if eq .View "note"}}{{template "note-detail" .}}{{end}}
 {{if eq .View "weather"}}{{template "weather-page" .}}{{end}}
 {{if eq .View "settings"}}{{template "settings" .}}{{end}}
 {{if eq .View "sports"}}{{template "sports" .}}{{else if eq .View "media"}}{{template "media" .}}{{end}}
 {{if eq .View "cookbook"}}{{template "cookbook" .}}{{else}}{{if .Notice}}<p class="book-notice" role="status">{{.Notice}}</p>{{end}}{{end}}
-{{if and .Demo (ne .View "settings") (ne .View "cookbook") (ne .View "today") (ne .View "weather") (ne .View "notes") (ne .View "note")}}<form class="sample-note" hx-post="/reset-demo" hx-target="#content" hx-confirm="Remove all current example data and start with an empty household?"><input type="hidden" name="csrf" value="{{.CSRF}}"><span>Example data</span><button type="submit">Start empty</button></form>{{end}}
+{{if and .Demo (ne .View "settings") (ne .View "cookbook") (ne .View "today") (ne .View "weather") (ne .View "notes") (ne .View "note") (ne .View "chore-charts")}}<form class="sample-note" hx-post="/reset-demo" hx-target="#content" hx-confirm="Remove all current example data and start with an empty household?"><input type="hidden" name="csrf" value="{{.CSRF}}"><span>Example data</span><button type="submit">Start empty</button></form>{{end}}
 {{end}}
 {{define "today"}}<h1 class="visually-hidden">Today</h1>{{template "weather-widget" .}}<div class="today-grid">
 <section class="agenda"><div class="section-heading"><h2>On the calendar</h2><a class="text-link summary-total" href="/calendar?mode=day&amp;date={{.Today}}" hx-boost="true" hx-target="#content">{{len .Events}} {{if eq (len .Events) 1}}event{{else}}events{{end}} <svg><use href="#i-arrow"/></svg></a></div>
@@ -101,7 +104,7 @@
 {{if ge .NowTop 0}}<div class="now-line" data-top="{{.NowTop}}" data-index="{{.NowIndex}}" data-lanes="{{len .Lanes}}" data-mode="{{.CalendarMode}}"><span>{{clock .Now}}</span></div>{{end}}
 </div></div></div></div>{{end}}
 </div></div>{{end}}
-{{define "chores"}}<nav class="filters" aria-label="Chore view" hx-boost="true" hx-target="#content"><a href="{{choreURL .PersonFilter "" false}}" {{if and (eq .Routine "") (not .AllSchedules)}}aria-current="page"{{end}}>Today</a><a href="{{choreURL .PersonFilter "Morning" false}}" {{if eq .Routine "Morning"}}aria-current="page"{{end}}>Morning</a><a href="{{choreURL .PersonFilter "Afternoon" false}}" {{if eq .Routine "Afternoon"}}aria-current="page"{{end}}>Afternoon</a><a href="{{choreURL .PersonFilter "Evening" false}}" {{if eq .Routine "Evening"}}aria-current="page"{{end}}>Evening</a><a href="{{choreURL .PersonFilter "" true}}" {{if .AllSchedules}}aria-current="page"{{end}}>All schedules</a></nav>
+{{define "chores"}}<nav class="filters" aria-label="Chore view" hx-boost="true" hx-target="#content"><a href="{{choreURL .PersonFilter "" false}}" {{if and (eq .Routine "") (not .AllSchedules)}}aria-current="page"{{end}}>Today</a><a class="chore-charts-link" href="/chores/charts"><svg aria-hidden="true"><use href="#i-star"/></svg>Charts</a><a href="{{choreURL .PersonFilter "Morning" false}}" {{if eq .Routine "Morning"}}aria-current="page"{{end}}>Morning</a><a href="{{choreURL .PersonFilter "Afternoon" false}}" {{if eq .Routine "Afternoon"}}aria-current="page"{{end}}>Afternoon</a><a href="{{choreURL .PersonFilter "Evening" false}}" {{if eq .Routine "Evening"}}aria-current="page"{{end}}>Evening</a><a href="{{choreURL .PersonFilter "" true}}" {{if .AllSchedules}}aria-current="page"{{end}}>All schedules</a></nav>
 <div class="list-scroll"><div class="list-heading chore-columns"><span>Task</span><span>Assigned to</span><span>Routine</span><span></span></div>
 {{range .Chores}}{{template "chore-row" (row . $)}}{{else}}<p class="empty">Nothing to do here. Enjoy the quiet.</p>{{end}}
 {{if .Completed}}<h2 class="completed-heading">Completed</h2>{{range .Completed}}{{template "chore-row" (row . $)}}{{end}}{{end}}</div>{{end}}

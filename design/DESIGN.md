@@ -93,3 +93,32 @@ and does not wait for a hold. Preserve the current-person button, clock and
 Settings on the right. Overflow arrows appear only when needed, and the selected
 section stays visible on navigation and resize. The native scrollbar is hidden
 for this menu; touch scrolling and the arrow controls remain available.
+
+
+## Chore charts
+
+Charts lives inside Chores rather than adding another main-menu section. Keep
+Chores selected in the icon menu and put Charts beside Today in its view tabs.
+Use a compact Day / Month / Year control, date input, person select and period
+arrows. Cards stay in alphabetical order rather than ranking children against
+one another. One retained completion is one star; selected-period badges unlock
+at 1, 5, 10, 25, 50 and 100 stars, with a best run of consecutive household dates
+with at least one recorded completion. These are derived progress markers, not
+permanent awards or prizes. Unchecking a completion retracts its star.
+
+At 1024×600, four helpers plus Household fit on one card row above a static bar
+chart. Day shows the selected day's totals with seven days of context; Month
+shows daily bars and Year shows monthly bars. Upcoming dates are muted dashes,
+not failures. Phones use two card columns and a horizontally scrolling plot with
+an explicit swipe hint. Colors follow the existing light/dark palette. Keep the
+one-star rule visible and put the detailed credit rules in a disclosure. More
+people and an expanded disclosure may scroll vertically. Open date inputs,
+changed filters and expanded help pause background refreshes. Plot positions survive
+normal background swaps without carrying over to another period or person.
+
+Use chore_history as the credit ledger: never count shopping, assignments,
+current done flags or the append-only activity log as additional achievements.
+Use its saved household date, stable credited person ID and current display
+name/photo. Preserve archived helpers with period history and keep shared credit
+separate. Do not infer credit from old completions that lack history, or calculate
+percentages without a historical record of what was actually due.

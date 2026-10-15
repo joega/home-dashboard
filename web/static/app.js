@@ -244,11 +244,11 @@
 
   var forecastPositions = new Map(), forecastBindings = new WeakSet();
   function configureForecast() {
-    document.querySelectorAll('[data-forecast-scroll],[data-forecast-days]').forEach(function(track) {
+    document.querySelectorAll('[data-forecast-scroll],[data-forecast-days],[data-chart-scroll]').forEach(function(track) {
       if (forecastBindings.has(track)) return;
       forecastBindings.add(track);
       var days = track.hasAttribute('data-forecast-days');
-      var key = (days ? 'days:' : 'hours:') + (days ? track.dataset.forecastDays : track.dataset.forecastScroll);
+      var key = track.hasAttribute('data-chart-scroll') ? 'chores:' + track.dataset.chartScroll : (days ? 'days:' : 'hours:') + (days ? track.dataset.forecastDays : track.dataset.forecastScroll);
       if (forecastPositions.has(key)) track.scrollLeft = forecastPositions.get(key);
       if (days) {
         var selected = track.querySelector('[aria-current]');
@@ -272,6 +272,7 @@
     var weatherState=document.getElementById("weather-scene-state");
     if(weatherState){document.body.dataset.weather=weatherState.dataset.scene;document.body.dataset.theme=weatherState.dataset.theme;}
     clock();
+    document.querySelectorAll("[data-chart-height]").forEach(function(bar){bar.style.height=Math.max(0,Math.min(100,Number(bar.dataset.chartHeight)||0))+"%";});
     configureCalendar();
     configureSchedule();
     layoutMenus();
@@ -338,14 +339,14 @@
     if (event.shiftKey && document.activeElement === first) {event.preventDefault();last.focus();}
     else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first.focus();}
   });
-  document.addEventListener("input",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");if(event.target.matches('.spotify-volume-slider input')){event.target.closest('label').querySelector('output').textContent=event.target.value+'%';event.target.closest('form').setAttribute('data-pause-refresh','');}});
-  document.addEventListener("change",function(event){var form=event.target.closest(".media-add");if(form)form.setAttribute("data-pause-refresh","");var deviceForm=event.target.closest(".spotify-device-form");if(deviceForm){if(event.target.value!==deviceForm.dataset.activeDevice)deviceForm.setAttribute("data-pause-refresh","");else deviceForm.removeAttribute("data-pause-refresh");}});
+  document.addEventListener("input",function(event){var form=event.target.closest(".media-add,.chore-chart-filters");if(form)form.setAttribute("data-pause-refresh","");if(event.target.matches('.spotify-volume-slider input')){event.target.closest('label').querySelector('output').textContent=event.target.value+'%';event.target.closest('form').setAttribute('data-pause-refresh','');}});
+  document.addEventListener("change",function(event){var form=event.target.closest(".media-add,.chore-chart-filters");if(form)form.setAttribute("data-pause-refresh","");var deviceForm=event.target.closest(".spotify-device-form");if(deviceForm){if(event.target.value!==deviceForm.dataset.activeDevice)deviceForm.setAttribute("data-pause-refresh","");else deviceForm.removeAttribute("data-pause-refresh");}});
   document.addEventListener("htmx:beforeRequest", function (event) {
     if(event.detail.elt && event.detail.elt.hasAttribute("data-media-poll") && (document.hidden || document.querySelector(".sheet,[data-pause-refresh]"))){event.preventDefault();return;}
     var scroller = document.querySelector(".list-scroll");
     var trigger = event.detail.elt;
     var sportsNavigation = trigger && trigger.closest(".sports-team-filters,.sports-modes,.sports-overflow");
-    var notesNavigation = trigger && trigger.closest(".note-open,.notes-tabs,.notes-pages,.note-reader-toolbar,.note-form");
+    var notesNavigation = trigger && trigger.closest(".note-open,.notes-tabs,.notes-pages,.note-reader-toolbar,.note-form,.chore-chart-controls,.chore-chart-period-nav,.chore-chart-people,.chore-charts-link");
     scrollTop = sportsNavigation || notesNavigation ? 0 : (scroller ? scroller.scrollTop : 0);
   });
   document.addEventListener("appearance",function(event){var theme=event.detail.theme;if(theme==="light"||theme==="dark"){document.body.dataset.theme=theme;var state=document.getElementById("weather-scene-state");if(state)state.dataset.theme=theme;}});
@@ -362,7 +363,7 @@
   if(document.fonts && document.fonts.ready)document.fonts.ready.then(layoutMenus);
   setInterval(tick, 1000);
   setInterval(function () {
-    if (document.hidden || document.querySelector(".sheet,[data-pause-refresh],.cookbook-page,[data-spotify-connected]") || document.querySelector(".htmx-request") || !window.htmx) return;
+    if (document.hidden || document.querySelector(".sheet,[data-pause-refresh],.cookbook-page,[data-spotify-connected],.chore-chart-filters input:focus,.chore-chart-explainer[open]") || document.querySelector(".htmx-request") || !window.htmx) return;
     htmx.ajax("GET", location.pathname + location.search, {target:"#content",swap:"innerHTML",headers:{"X-Home-HQ-Background":"true"}}).catch(function () {
       // The connection policy handles failed polls; keep the current screen.
     });

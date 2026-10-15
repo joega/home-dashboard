@@ -127,7 +127,7 @@ func safeProfileReturn(value string) string {
 		return u.RequestURI()
 	}
 	switch u.Path {
-	case "/", "/calendar", "/chores", "/shopping", "/sports", "/media", "/settings", "/cookbook", "/weather", "/notes":
+	case "/", "/calendar", "/chores", "/shopping", "/sports", "/media", "/settings", "/cookbook", "/weather", "/notes", "/chores/charts":
 		return u.RequestURI()
 	}
 	return "/"

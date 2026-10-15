@@ -30,6 +30,7 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	ChoreChart                                                                                                         ChoreChart
 	Notes                                                                                                              []Note
 	Note                                                                                                               Note
 	NoteColors                                                                                                         []NoteColor
@@ -213,6 +214,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports", "/media", "/weather", "/notes"} {
 		mux.HandleFunc("GET "+route, a.page)
 	}
+	mux.HandleFunc("GET /chores/charts", a.choreChartsPage)
 	mux.HandleFunc("GET /forms/{kind}/{id}", a.form)
 	mux.HandleFunc("GET /day/{date}", a.day)
 	mux.HandleFunc("POST /entries/{kind}/{id}", a.save)
@@ -417,6 +419,8 @@ func (a *App) load(p *Page, q url.Values) error {
 		}
 	}
 	switch p.View {
+	case "chore-charts":
+		return a.loadChoreCharts(p, q)
 	case "notes":
 		return a.loadNotes(p, q)
 	case "note":
