@@ -30,6 +30,12 @@ type Cell struct {
 	Events       []Entry
 }
 type Page struct {
+	Notes                                                                                                              []Note
+	Note                                                                                                               Note
+	NoteColors                                                                                                         []NoteColor
+	NoteArchived                                                                                                       bool
+	NoteCount, NoteArchiveCount, NotePage, NotePages                                                                   int
+	NotePrev, NoteNext                                                                                                 string
 	SpotifyLinks                                                                                                       []SpotifyLink
 	SpotifyCards                                                                                                       []Page
 	SpotifyPerson                                                                                                      Person
@@ -123,6 +129,14 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 				Selected bool
 			}{t, selected}
 		},
+		"noteURL": noteURL,
+		"noteCard": func(n Note, p Page) any {
+			return struct {
+				Note         Note
+				CSRF, Return string
+				ActorID      int64
+			}{n, p.CSRF, p.Return, p.CurrentPerson.ID}
+		},
 		"clock": func(t time.Time) string { return t.Format("3:04 PM") },
 		"timeLabel": func(v string) string {
 			t, e := time.Parse("15:04", v)
@@ -196,7 +210,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("GET /appearance", a.appearance)
 	mux.HandleFunc("GET /frame/display-policy", a.displayPolicy)
 	mux.HandleFunc("POST /settings/display", a.saveDisplay)
-	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports", "/media", "/weather"} {
+	for _, route := range []string{"/", "/calendar", "/chores", "/shopping", "/settings", "/sports", "/media", "/weather", "/notes"} {
 		mux.HandleFunc("GET "+route, a.page)
 	}
 	mux.HandleFunc("GET /forms/{kind}/{id}", a.form)
@@ -218,6 +232,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("GET /stores/{id}/edit", a.shopForm)
 	mux.HandleFunc("POST /stores/{id}", a.saveShop)
 	mux.HandleFunc("POST /stores/{id}/status", a.shopStatus)
+	a.registerNotes(mux)
 	a.registerCookbook(mux)
 	a.registerMedia(mux)
 	a.registerSpotify(mux)
@@ -242,6 +257,9 @@ func (a *App) protect(next http.Handler) http.Handler {
 				}
 			} else {
 				limit := int64(16 << 10)
+				if strings.HasPrefix(r.URL.Path, "/notes/") {
+					limit = 64 << 10
+				}
 				if strings.HasPrefix(r.URL.Path, "/cookbook") {
 					limit = 128 << 10
 				}
@@ -301,7 +319,7 @@ func (a *App) page(w http.ResponseWriter, r *http.Request) {
 	if view == "" {
 		view = "today"
 	}
-	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" && view != "media" && view != "weather" {
+	if view != "today" && view != "calendar" && view != "chores" && view != "shopping" && view != "settings" && view != "sports" && view != "media" && view != "weather" && view != "notes" {
 		http.NotFound(w, r)
 		return
 	}
@@ -399,6 +417,10 @@ func (a *App) load(p *Page, q url.Values) error {
 		}
 	}
 	switch p.View {
+	case "notes":
+		return a.loadNotes(p, q)
+	case "note":
+		p.Title = "Notes"
 	case "weather":
 		p.Title = "Weather"
 	case "media":

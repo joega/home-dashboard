@@ -120,11 +120,14 @@ func safeProfileReturn(value string) string {
 	if e != nil || u.IsAbs() || u.Host != "" || u.Fragment != "" {
 		return "/"
 	}
+	if strings.HasPrefix(u.Path, "/notes/") {
+		return safeNoteReturn(u.RequestURI())
+	}
 	if strings.HasPrefix(u.Path, "/cookbook/") {
 		return u.RequestURI()
 	}
 	switch u.Path {
-	case "/", "/calendar", "/chores", "/shopping", "/sports", "/media", "/settings", "/cookbook":
+	case "/", "/calendar", "/chores", "/shopping", "/sports", "/media", "/settings", "/cookbook", "/weather", "/notes":
 		return u.RequestURI()
 	}
 	return "/"

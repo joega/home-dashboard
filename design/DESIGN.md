@@ -58,3 +58,24 @@ seven cards; smaller heights can scroll vertically. Phones scroll the daily card
 horizontally and show condition labels. Forecast scrollers retain their positions
 through background swaps. Use static SVG weather icons and CSS skies; animations
 remain deferred. Empty, disabled, stale and limited-coverage states stay explicit.
+
+
+## Household notes
+
+Notes uses a responsive tiled board with muted butter, sage, peach, sky and lilac
+paper, with matching darker colors at night. Keep the existing weather gap and
+compact page header. Three columns at 1024×600 fit six typical messages; narrower
+tablets use two, phones use one, and wide desktops use four. Longer boards scroll
+and paginate at 30 notes. Tiles preview the title and message, show the recipient
+(or Everyone), author/avatar and creation time, and offer a 44 px pin control.
+Pinned notes sort first, then newest. Tap a tile for the full message in a larger
+reader, with Edit and Archive controls. Archived notes have a separate view and
+can be restored with their original author and pin state.
+
+The drawer editor uses plain text, a native recipient select, five labeled color
+choices and an optional pin. New notes take the current person as author, or
+Household when no person is selected; editing keeps that attribution. A recipient
+is a friendly address, not a privacy boundary. Open editors pause background
+refreshes. Conflicting edits retain the unsaved draft and offer an explicit way
+to load the latest saved version. Dragging, corkboard textures, animation and
+automatic expiry are outside this first version.

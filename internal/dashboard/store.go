@@ -86,6 +86,10 @@ func Open(path string, demo bool, today string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
+	if err := s.migrateNotes(); err != nil {
+		db.Close()
+		return nil, err
+	}
 	if err := s.migrateRecipes(); err != nil {
 		db.Close()
 		return nil, err
