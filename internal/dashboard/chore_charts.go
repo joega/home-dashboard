@@ -59,9 +59,9 @@ func (s *Store) choreDayCounts(start, end string) ([]choreDayCount, error) {
 func choreChartURL(period, date, person string) string {
 	q := url.Values{"period": {period}, "date": {date}}
 	if person != "" {
-		q.Set("person", person)
+		q.Set("chart_person", person)
 	}
-	return "/chores/charts?" + q.Encode()
+	return "/chores?" + q.Encode()
 }
 func choreBadge(count int) (name string, next int) {
 	switch {
@@ -256,17 +256,45 @@ func (a *App) loadChoreCharts(p *Page, q url.Values) error {
 	p.Title = "Chore charts"
 	return nil
 }
+
+// Keep older chart bookmarks on the combined Chores page.
 func (a *App) choreChartsPage(w http.ResponseWriter, r *http.Request) {
-	p := a.base(w, r)
-	p.View = "chore-charts"
-	if err := a.load(&p, r.URL.Query()); err != nil {
-		a.fail(w, err)
-		return
+	q := r.URL.Query()
+	if person := q.Get("person"); person != "" {
+		q.Set("chart_person", person)
+		q.Del("person")
 	}
-	name := "page"
-	if r.Header.Get("HX-Request") == "true" && r.Header.Get("HX-History-Restore-Request") != "true" {
-		name = "fragment"
-		w.Header().Set("HX-Push-Url", p.Return)
+	http.Redirect(w, r, "/chores?"+q.Encode()+"#chore-charts", http.StatusSeeOther)
+}
+
+func (a *App) loadEmbeddedChoreCharts(p *Page, q url.Values) error {
+	chartQuery := url.Values{"period": {q.Get("period")}, "date": {q.Get("date")}, "person": {q.Get("chart_person")}}
+	if err := a.loadChoreCharts(p, chartQuery); err != nil {
+		return err
 	}
-	a.render(w, name, p)
+	// Chart navigation retains the independent list filters and normal form returns.
+	withList := func(raw string) string {
+		if raw == "" {
+			return ""
+		}
+		u, _ := url.Parse(raw)
+		values := u.Query()
+		for _, key := range []string{"person", "routine", "schedules"} {
+			if value := q.Get(key); value != "" {
+				values.Set(key, value)
+			}
+		}
+		u.RawQuery = values.Encode()
+		return u.String()
+	}
+	c := &p.ChoreChart
+	for _, target := range []*string{&c.PrevURL, &c.NextURL, &c.CurrentURL, &c.DayURL, &c.MonthURL, &c.YearURL} {
+		*target = withList(*target)
+	}
+	for i := range c.People {
+		c.People[i].URL = withList(c.People[i].URL)
+	}
+	p.Return = withList(p.Return)
+	p.Title = "Chores"
+	return nil
 }

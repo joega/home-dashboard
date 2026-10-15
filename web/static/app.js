@@ -346,7 +346,7 @@
     var scroller = document.querySelector(".list-scroll");
     var trigger = event.detail.elt;
     var sportsNavigation = trigger && trigger.closest(".sports-team-filters,.sports-modes,.sports-overflow");
-    var notesNavigation = trigger && trigger.closest(".note-open,.notes-tabs,.notes-pages,.note-reader-toolbar,.note-form,.chore-chart-controls,.chore-chart-period-nav,.chore-chart-people,.chore-charts-link");
+    var notesNavigation = trigger && trigger.closest(".note-open,.notes-tabs,.notes-pages,.note-reader-toolbar,.note-form");
     scrollTop = sportsNavigation || notesNavigation ? 0 : (scroller ? scroller.scrollTop : 0);
   });
   document.addEventListener("appearance",function(event){var theme=event.detail.theme;if(theme==="light"||theme==="dark"){document.body.dataset.theme=theme;var state=document.getElementById("weather-scene-state");if(state)state.dataset.theme=theme;}});

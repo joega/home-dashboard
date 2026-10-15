@@ -419,8 +419,6 @@ func (a *App) load(p *Page, q url.Values) error {
 		}
 	}
 	switch p.View {
-	case "chore-charts":
-		return a.loadChoreCharts(p, q)
 	case "notes":
 		return a.loadNotes(p, q)
 	case "note":
@@ -462,6 +460,9 @@ func (a *App) load(p *Page, q url.Values) error {
 	case "calendar":
 		return a.loadCalendar(p, q)
 	case "chores":
+		if err := a.loadEmbeddedChoreCharts(p, q); err != nil {
+			return err
+		}
 		p.PersonFilter = chorePersonFilter(q.Get("person"), p.People)
 		p.Title = "Chores"
 		p.Subtitle = "A little teamwork, every day."

@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strconv"
@@ -12,8 +13,14 @@ import (
 
 func readChoreChart(t *testing.T, a *App, now time.Time, q url.Values) ChoreChart {
 	t.Helper()
-	p := Page{View: "chore-charts", Now: now.In(a.loc), Today: now.In(a.loc).Format(time.DateOnly)}
-	if err := a.load(&p, q); err != nil {
+	p := Page{View: "chores", Now: now.In(a.loc), Today: now.In(a.loc).Format(time.DateOnly)}
+	values := url.Values{}
+	for key, items := range q {
+		values[key] = append([]string(nil), items...)
+	}
+	values.Set("chart_person", q.Get("person"))
+	values.Del("person")
+	if err := a.load(&p, values); err != nil {
 		t.Fatal(err)
 	}
 	return p.ChoreChart
@@ -233,7 +240,7 @@ func TestChoreChartHTTPNavigationEscapingAndReadOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, hx := range []bool{false, true} {
-		req := httptest.NewRequest("GET", fmt.Sprintf("http://house.test/chores/charts?period=day&date=%s&person=%d", day, person.ID), nil)
+		req := httptest.NewRequest("GET", fmt.Sprintf("http://house.test/chores?period=day&date=%s&chart_person=%d", day, person.ID), nil)
 		if hx {
 			req.Header.Set("HX-Request", "true")
 		}
@@ -243,7 +250,7 @@ func TestChoreChartHTTPNavigationEscapingAndReadOnly(t *testing.T) {
 		if w.Code != 200 || !strings.Contains(text, `aria-label="Chore completion charts"`) || !strings.Contains(text, `aria-current="page" aria-label="Chores"`) || !strings.Contains(text, `Alex &lt;b&gt;helper&lt;/b&gt;`) || strings.Contains(text, `Alex <b>helper</b>`) {
 			t.Fatal("chart rendering or escaping", w.Code, text)
 		}
-		if hx && (w.Header().Get("HX-Push-Url") != choreChartURL("day", day, strconv.FormatInt(person.ID, 10)) || strings.Contains(text, "<!doctype")) {
+		if hx && (w.Header().Get("HX-Push-Url") == "" || strings.Contains(text, "<!doctype")) {
 			t.Fatal("fragment URL", w.Header())
 		}
 		if !hx && !strings.Contains(text, "<!doctype") {
@@ -252,8 +259,20 @@ func TestChoreChartHTTPNavigationEscapingAndReadOnly(t *testing.T) {
 	}
 	w := httptest.NewRecorder()
 	a.ServeHTTP(w, httptest.NewRequest("GET", "http://house.test/chores", nil))
-	if !strings.Contains(w.Body.String(), `class="chore-charts-link" href="/chores/charts"`) {
-		t.Fatal("Charts not linked from Chores")
+	text := w.Body.String()
+	if !strings.Contains(text, `id="chore-charts"`) || strings.Contains(text, `class="chore-charts-link"`) || strings.Index(text, `aria-label="Chore view"`) > strings.Index(text, `id="chore-charts"`) {
+		t.Fatal("Charts must follow the existing Chores interface")
+	}
+	w = httptest.NewRecorder()
+	a.ServeHTTP(w, httptest.NewRequest("GET", "http://house.test/chores?person=none&routine=Morning&period=year&chart_person=household", nil))
+	text = w.Body.String()
+	if !strings.Contains(text, `name="person" value="none"`) || !strings.Contains(text, `name="routine" value="Morning"`) || !strings.Contains(text, `chart_person=household&amp;date=`) || !strings.Contains(text, `person=none&amp;routine=Morning`) || !strings.Contains(text, `hx-select="#chore-charts"`) {
+		t.Fatal("Chart controls lost independent list filters", text)
+	}
+	w = httptest.NewRecorder()
+	a.ServeHTTP(w, httptest.NewRequest("GET", "http://house.test/chores/charts?period=year&person=household", nil))
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/chores?chart_person=household&period=year#chore-charts" {
+		t.Fatal("Legacy chart bookmark", w.Code, w.Header())
 	}
 	var count int
 	if err := s.db.QueryRow("SELECT count(*) FROM chore_history").Scan(&count); err != nil || count != 1 {
@@ -282,7 +301,7 @@ func TestChoreChartEmptyHouseholdDoesNotInventProgress(t *testing.T) {
 		}
 	}
 	w := httptest.NewRecorder()
-	a.ServeHTTP(w, httptest.NewRequest("GET", "http://house.test/chores/charts", nil))
+	a.ServeHTTP(w, httptest.NewRequest("GET", "http://house.test/chores", nil))
 	if w.Code != 200 || !strings.Contains(w.Body.String(), "Add people") || !strings.Contains(w.Body.String(), "No completions recorded") {
 		t.Fatal("empty household has no onboarding", w.Code, w.Body.String())
 	}

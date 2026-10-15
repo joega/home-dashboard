@@ -97,8 +97,10 @@ for this menu; touch scrolling and the arrow controls remain available.
 
 ## Chore charts
 
-Charts lives inside Chores rather than adding another main-menu section. Keep
-Chores selected in the icon menu and put Charts beside Today in its view tabs.
+Charts sits below the existing pending and completed lists inside Chores, in the
+same vertical scroll area. Keep chores and their filters first; there is no
+separate chart screen or navigation tab. Chart controls replace only the chart
+section and retain the independent list filters.
 Use a compact Day / Month / Year control, date input, person select and period
 arrows. Cards stay in alphabetical order rather than ranking children against
 one another. One retained completion is one star; selected-period badges unlock
@@ -107,7 +109,7 @@ with at least one recorded completion. These are derived progress markers, not
 permanent awards or prizes. Unchecking a completion retracts its star.
 
 At 1024×600, four helpers plus Household fit on one card row above a static bar
-chart. Day shows the selected day's totals with seven days of context; Month
+chart, reached by scrolling below the chores. Day shows the selected day's totals with seven days of context; Month
 shows daily bars and Year shows monthly bars. Upcoming dates are muted dashes,
 not failures. Phones use two card columns and a horizontally scrolling plot with
 an explicit swipe hint. Colors follow the existing light/dark palette. Keep the
