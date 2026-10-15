@@ -69,6 +69,9 @@ type Page struct {
 	ExplorePreview                                                                                                     bool
 	ExistingRecipe                                                                                                     int64
 
+	WeatherModal                                                                                     bool
+	SummaryEntries                                                                                   []Entry
+	SummaryTitle, SummaryURL                                                                         string
 	ChoreSummary, ShoppingSummary                                                                    []SummaryGroup
 	ChorePending, ShoppingPending                                                                    int
 	PersonFilter                                                                                     string
@@ -164,6 +167,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 		"mealRef":        func(v string) string { return strings.TrimPrefix(v, "mdb:") },
 		"recipeURLQuery": url.QueryEscape,
 		"choreURL":       choreURL,
+		"summaryQuery":   func(raw string) string { u, _ := url.Parse(raw); return u.RawQuery },
 		"personSelected": func(id int64, filter string) bool { return strconv.FormatInt(id, 10) == filter },
 		"shopSelected":   func(id int64, filter string) bool { return strconv.FormatInt(id, 10) == filter },
 		"personRow":      func(person Person, p Page) PersonRow { return PersonRow{Person: person, CSRF: p.CSRF} },
@@ -217,6 +221,9 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("GET /chores/charts", a.choreChartsPage)
 	mux.HandleFunc("GET /forms/{kind}/{id}", a.form)
 	mux.HandleFunc("GET /day/{date}", a.day)
+	mux.HandleFunc("GET /today/weather", a.todayWeather)
+	mux.HandleFunc("GET /today/event/{id}", a.todayEvent)
+	mux.HandleFunc("GET /today/summary/{kind}", a.todaySummary)
 	mux.HandleFunc("POST /entries/{kind}/{id}", a.save)
 	mux.HandleFunc("POST /entries/{id}/complete", a.complete)
 	mux.HandleFunc("POST /entries/{id}/delete", a.delete)
@@ -357,7 +364,7 @@ func (a *App) load(p *Page, q url.Values) error {
 	if err != nil {
 		return err
 	}
-	if p.View == "weather" {
+	if p.View == "weather" || p.View == "today" {
 		p.Forecast = a.weather.ForecastView(p.WeatherSettings, p.Now, q.Get("date"))
 		p.Weather = p.Forecast.Current
 	} else {

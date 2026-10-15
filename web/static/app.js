@@ -308,8 +308,9 @@
     }
     var target = event.target.closest("[data-close]");
     if (target) {closeEditor();return;}
+    if (event.target.closest("[data-dismiss-detail]")) closeEditor();
     if (event.target.closest("[data-reload]")) location.reload();
-    if (event.target.closest('[hx-target="#drawer"]')) lastTrigger = event.target.closest("button,a");
+    if (event.target.closest('[hx-target="#drawer"]') && !event.target.closest("#drawer")) lastTrigger = event.target.closest("button,a");
   });
   document.addEventListener("pointerdown", function (event) {
     if (!event.target.closest(".calendar-body") || event.target.closest(".time-jumps") || event.button !== 0) return;
@@ -333,11 +334,11 @@
     if (!dialog) return;
     if (event.key === "Escape") {closeEditor();return;}
     if (event.key !== "Tab") return;
-    var controls = dialog.querySelectorAll("button,input:not([type=hidden]),select,a[href]");
+    var controls = Array.from(dialog.querySelectorAll("button,input:not([type=hidden]),select,a[href],[tabindex='0']")).filter(function(el){return !el.disabled && el.getClientRects().length;});
     if (!controls.length) return;
     var first = controls[0], last = controls[controls.length - 1];
-    if (event.shiftKey && document.activeElement === first) {event.preventDefault();last.focus();}
-    else if (!event.shiftKey && document.activeElement === last) {event.preventDefault();first.focus();}
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {event.preventDefault();last.focus();}
+    else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog)) {event.preventDefault();first.focus();}
   });
   document.addEventListener("input",function(event){var form=event.target.closest(".media-add,.chore-chart-filters");if(form)form.setAttribute("data-pause-refresh","");if(event.target.matches('.spotify-volume-slider input')){event.target.closest('label').querySelector('output').textContent=event.target.value+'%';event.target.closest('form').setAttribute('data-pause-refresh','');}});
   document.addEventListener("change",function(event){var form=event.target.closest(".media-add,.chore-chart-filters");if(form)form.setAttribute("data-pause-refresh","");var deviceForm=event.target.closest(".spotify-device-form");if(deviceForm){if(event.target.value!==deviceForm.dataset.activeDevice)deviceForm.setAttribute("data-pause-refresh","");else deviceForm.removeAttribute("data-pause-refresh");}});
