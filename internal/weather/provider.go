@@ -101,7 +101,7 @@ func ForecastURL(l Location) (string, error) {
 	if err := l.Validate(); err != nil {
 		return "", err
 	}
-	q := url.Values{"latitude": {strconv.FormatFloat(l.Latitude, 'f', 5, 64)}, "longitude": {strconv.FormatFloat(l.Longitude, 'f', 5, 64)}, "timezone": {l.Zone}, "timeformat": {"unixtime"}, "temperature_unit": {"celsius"}, "wind_speed_unit": {"ms"}, "forecast_days": {"7"}, "current": {"temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m"}, "hourly": {"temperature_2m,weather_code,is_day,precipitation_probability"}, "daily": {"temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_probability_max"}}
+	q := url.Values{"latitude": {strconv.FormatFloat(l.Latitude, 'f', 5, 64)}, "longitude": {strconv.FormatFloat(l.Longitude, 'f', 5, 64)}, "timezone": {l.Zone}, "timeformat": {"unixtime"}, "temperature_unit": {"celsius"}, "wind_speed_unit": {"ms"}, "forecast_days": {"7"}, "current": {"temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,wind_speed_10m,relative_humidity_2m,wind_gusts_10m,wind_direction_10m"}, "hourly": {"temperature_2m,weather_code,is_day,precipitation_probability"}, "daily": {"temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,precipitation_probability_max,uv_index_max"}}
 	return "https://api.open-meteo.com/v1/forecast?" + q.Encode(), nil
 }
 func (c *Client) Fetch(ctx context.Context, l Location, now time.Time) (Forecast, error) {
@@ -187,6 +187,7 @@ func Parse(raw []byte, l Location, now time.Time) (Forecast, error) {
 		s.IsDay = day == 1
 		s.FeelsLike = s.Temperature
 		if current {
+			s.Humidity, s.WindGust, s.WindDirection = m["relative_humidity_2m"], m["wind_gusts_10m"], m["wind_direction_10m"]
 			for k, dst := range map[string]*float64{"apparent_temperature": &s.FeelsLike, "cloud_cover": &s.CloudCover, "wind_speed_10m": &s.Wind} {
 				*dst, err = number(m, k)
 				if err != nil {
@@ -241,7 +242,10 @@ func Parse(raw []byte, l Location, now time.Time) (Forecast, error) {
 	if err != nil {
 		return f, err
 	}
-	for _, r := range days {
+	if values, exists := p.Daily["uv_index_max"]; exists && len(values) != len(days) {
+		return f, errors.New("mismatched UV forecast")
+	}
+	for index, r := range days {
 		t, e := stamp(r["time"])
 		if e != nil {
 			return f, e
@@ -250,6 +254,9 @@ func Parse(raw []byte, l Location, now time.Time) (Forecast, error) {
 		// Applying the location's varying DST offset can shift them to the prior date.
 		// See https://open-meteo.com/en/docs (timeformat).
 		d := Daily{Date: t.Add(time.Duration(p.Offset) * time.Second).Format("2006-01-02"), RainChance: r["precipitation_probability_max"]}
+		if values := p.Daily["uv_index_max"]; len(values) > index {
+			d.UV = values[index]
+		}
 		d.Low, e = number(r, "temperature_2m_min")
 		if e != nil {
 			return f, e

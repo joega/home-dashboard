@@ -69,6 +69,7 @@ type Sample struct {
 	Code                                     int
 	IsDay                                    bool
 	RainChance                               *float64
+	Humidity, WindGust, WindDirection        *float64
 }
 type Daily struct {
 	Date            string
@@ -76,6 +77,7 @@ type Daily struct {
 	Code            int
 	Sunrise, Sunset time.Time
 	RainChance      *float64
+	UV              *float64
 }
 type Forecast struct {
 	Location    Location
@@ -114,8 +116,10 @@ func Condition(code int) (kind, label string) {
 		return "unknown", "Conditions unavailable"
 	}
 }
+func optional(v *float64, lo, hi float64) bool { return v == nil || finite(*v, lo, hi) }
+
 func validSample(s Sample) bool {
-	return !s.Time.IsZero() && finite(s.Temperature, -150, 100) && finite(s.FeelsLike, -200, 150) && finite(s.CloudCover, 0, 100) && finite(s.Wind, 0, 1000) && s.Code >= 0 && s.Code <= 999 && (s.RainChance == nil || finite(*s.RainChance, 0, 100))
+	return optional(s.Humidity, 0, 100) && optional(s.WindGust, 0, 1000) && optional(s.WindDirection, 0, 360) && !s.Time.IsZero() && finite(s.Temperature, -150, 100) && finite(s.FeelsLike, -200, 150) && finite(s.CloudCover, 0, 100) && finite(s.Wind, 0, 1000) && s.Code >= 0 && s.Code <= 999 && (s.RainChance == nil || finite(*s.RainChance, 0, 100))
 }
 
 // Validate also gates persisted cache data; corrupt or expired data never looks current.
@@ -136,7 +140,7 @@ func (f Forecast) Validate(now time.Time) error {
 	}
 	var previous string
 	for _, d := range f.Daily {
-		if _, err := time.Parse("2006-01-02", d.Date); err != nil || d.Date <= previous || !finite(d.Low, -150, 100) || !finite(d.High, -150, 100) || d.Low > d.High || d.Code < 0 || d.Code > 999 || d.Sunrise.IsZero() || !d.Sunset.After(d.Sunrise) || (d.RainChance != nil && !finite(*d.RainChance, 0, 100)) {
+		if _, err := time.Parse("2006-01-02", d.Date); err != nil || d.Date <= previous || !finite(d.Low, -150, 100) || !finite(d.High, -150, 100) || d.Low > d.High || !optional(d.UV, 0, 30) || d.Code < 0 || d.Code > 999 || d.Sunrise.IsZero() || !d.Sunset.After(d.Sunrise) || (d.RainChance != nil && !finite(*d.RainChance, 0, 100)) {
 			return errors.New("Invalid daily forecast.")
 		}
 		previous = d.Date

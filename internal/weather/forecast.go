@@ -2,6 +2,8 @@ package weather
 
 import (
 	"fmt"
+	"math"
+	"strings"
 	"time"
 )
 
@@ -9,6 +11,8 @@ import (
 // Forecast remains shared data for future calendar integrations.
 type ForecastView struct {
 	Current                                         View
+	HomeHourly                                      []HourlyView
+	Summary, Gusts, Humidity, UV, TemperaturePoints string
 	Hourly                                          []HourlyView
 	Days                                            []DayView
 	SelectedDate, HourlyTitle, HourlyCoverage, Zone string
@@ -16,6 +20,8 @@ type ForecastView struct {
 }
 
 type HourlyView struct {
+	TemperatureC                                                              float64
+	Chance                                                                    int
 	Time, Label, Date, Temperature, Icon, Condition, Rain, PrecipitationLabel string
 }
 
@@ -96,10 +102,26 @@ func MakeForecastView(cfg Settings, f *Forecast, now time.Time, requestedDate st
 			break
 		}
 	}
+	v.Summary = summary(f, now, zone)
+	v.Gusts, v.Humidity, v.UV = "—", "—", "—"
+	if f.Current.WindGust != nil {
+		v.Gusts = windSpeed(*f.Current.WindGust, cfg.Units)
+	}
+	if f.Current.Humidity != nil {
+		v.Humidity = fmt.Sprintf("%.0f%%", *f.Current.Humidity)
+	}
+	for _, d := range f.Daily {
+		if d.Date == selected && d.UV != nil {
+			v.UV = fmt.Sprintf("%.1f", *d.UV)
+		}
+	}
 	if cfg.Units == "F" {
 		v.Wind = fmt.Sprintf("%.0f mph", f.Current.Wind*2.2369362921)
 	} else {
 		v.Wind = fmt.Sprintf("%.0f km/h", f.Current.Wind*3.6)
+	}
+	if f.Current.WindDirection != nil {
+		v.Wind = []string{"N", "NE", "E", "SE", "S", "SW", "W", "NW"}[int(math.Round(*f.Current.WindDirection/45))%8] + " " + v.Wind
 	}
 	for _, h := range f.Hourly {
 		if !h.Time.Add(time.Hour).After(now) {
@@ -118,7 +140,11 @@ func MakeForecastView(cfg Settings, f *Forecast, now time.Time, requestedDate st
 		if !h.Time.After(now) {
 			label = "Now"
 		}
-		v.Hourly = append(v.Hourly, HourlyView{Time: h.Time.Format(time.RFC3339), Label: label, Date: at.Format("Mon, Jan 2"), Temperature: Temperature(h.Temperature, cfg.Units), Icon: icon, Condition: condition, Rain: chance(h.RainChance), PrecipitationLabel: hourlyPrecipitation(h.Code)})
+		temperature := h.Temperature
+		if label == "Now" {
+			temperature, icon, condition = f.Current.Temperature, v.Current.Icon, v.Current.Condition
+		}
+		v.Hourly = append(v.Hourly, HourlyView{TemperatureC: temperature, Chance: rainBar(h.RainChance), Time: h.Time.Format(time.RFC3339), Label: label, Date: at.Format("Mon, Jan 2"), Temperature: Temperature(temperature, cfg.Units), Icon: icon, Condition: condition, Rain: chance(h.RainChance), PrecipitationLabel: hourlyPrecipitation(h.Code)})
 	}
 	if v.SelectedDate == "" && len(v.Hourly) < 24 {
 		v.HourlyCoverage = fmt.Sprintf("%d of 24 hours available", len(v.Hourly))
@@ -134,5 +160,76 @@ func MakeForecastView(cfg Settings, f *Forecast, now time.Time, requestedDate st
 			v.Hourly[i].Label = at.In(zone).Format("3 PM MST")
 		}
 	}
+
+	if v.SelectedDate == "" {
+		v.HomeHourly = append(v.HomeHourly, v.Hourly[:min(6, len(v.Hourly))]...)
+	}
+	if len(v.Hourly) > 1 {
+		low, high := v.Hourly[0].TemperatureC, v.Hourly[0].TemperatureC
+		for _, h := range v.Hourly {
+			low = math.Min(low, h.TemperatureC)
+			high = math.Max(high, h.TemperatureC)
+		}
+		points := make([]string, 0, len(v.Hourly))
+		for i, h := range v.Hourly {
+			points = append(points, fmt.Sprintf("%.1f,%.1f", 20+float64(i)*860/float64(len(v.Hourly)-1), 52-(h.TemperatureC-low)/math.Max(high-low, 1)*40))
+		}
+		v.TemperaturePoints = strings.Join(points, " ")
+	}
 	return v
+}
+
+func windSpeed(ms float64, units string) string {
+	if units == "F" {
+		return fmt.Sprintf("%.0f mph", ms*2.2369362921)
+	}
+	return fmt.Sprintf("%.0f km/h", ms*3.6)
+}
+func rainBar(chance *float64) int {
+	if chance == nil {
+		return 0
+	}
+	return int(math.Round(*chance))
+}
+
+// Headlines use hourly probabilities, never imply minute-level rain timing,
+// and promise a dry window only when all twelve consecutive hours are known.
+func summary(f *Forecast, now time.Time, zone *time.Location) string {
+	start := now.Truncate(time.Hour)
+	window := []Sample{}
+	for _, h := range f.Hourly {
+		if !h.Time.Before(start) && h.Time.Before(start.Add(12*time.Hour)) {
+			window = append(window, h)
+		}
+	}
+	for _, h := range window {
+		if h.RainChance != nil && *h.RainChance >= 50 {
+			kind, label := Condition(h.Code)
+			noun := "Rain"
+			if kind == "snow" {
+				noun = "Snow"
+			}
+			if kind == "storm" {
+				noun = "Thunderstorms"
+			}
+			if label == "Freezing rain" {
+				noun = label
+			}
+			if !h.Time.After(now.Add(time.Hour)) {
+				return noun + " likely in the next hour"
+			}
+			return noun + " likely around " + h.Time.In(zone).Format("3 PM")
+		}
+	}
+	if f.Current.WindGust != nil && *f.Current.WindGust >= 12.5 {
+		return "Strong gusts — a windy spell"
+	}
+	dry := len(window) == 12
+	for i, h := range window {
+		dry = dry && h.Time.Equal(start.Add(time.Duration(i)*time.Hour)) && h.RainChance != nil && *h.RainChance < 20
+	}
+	if dry {
+		return "Mostly dry for the next 12 hours"
+	}
+	return "Your next few hours, at a glance"
 }
