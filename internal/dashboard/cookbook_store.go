@@ -255,6 +255,32 @@ func (s *Store) SaveRecipe(r Recipe) (int64, error) {
 	}
 	return r.ID, nil
 }
+
+// DeleteRecipe removes the saved recipe and transfer receipts, leaving shopping items intact.
+func (s *Store) DeleteRecipe(id int64, version int) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var current int
+	if err = tx.QueryRow("SELECT version FROM recipes WHERE id=?", id).Scan(&current); errors.Is(err, sql.ErrNoRows) {
+		return ErrMissing
+	} else if err != nil {
+		return err
+	}
+	if version != current {
+		return ErrRecipeChanged
+	}
+	if _, err = tx.Exec("DELETE FROM recipe_shopping_batches WHERE recipe_id=?", id); err != nil {
+		return err
+	}
+	if _, err = tx.Exec("DELETE FROM recipes WHERE id=?", id); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
 func (s *Store) RecipeAction(id int64, action string, value bool) error {
 	q := ""
 	var arg any = value

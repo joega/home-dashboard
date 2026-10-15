@@ -55,6 +55,7 @@ func (a *App) registerCookbook(mux *http.ServeMux) {
 	mux.HandleFunc("GET /cookbook/recipes/{id}/photo", a.recipeImage)
 	mux.HandleFunc("GET /cookbook/recipes/{id}/export", a.recipeExport)
 	mux.HandleFunc("POST /cookbook/recipes/{id}", a.recipeSave)
+	mux.HandleFunc("POST /cookbook/recipes/{id}/delete", a.recipeDelete)
 	mux.HandleFunc("POST /cookbook/recipes/{id}/favorite", a.recipeFavorite)
 	mux.HandleFunc("POST /cookbook/recipes/{id}/active", a.recipeActive)
 	mux.HandleFunc("POST /cookbook/recipes/{id}/cooked", a.recipeCooked)
@@ -121,6 +122,9 @@ func (a *App) cookbookLibrary(w http.ResponseWriter, r *http.Request) {
 	}
 	if page < last {
 		p.RecipeNext = pageURL(page + 1)
+	}
+	if r.URL.Query().Get("deleted") == "1" {
+		p.Notice = "Recipe deleted."
 	}
 	if r.URL.Query().Get("empty_pick") == "1" {
 		p.Notice = "No saved dinner recipes match these filters. Add a dinner recipe or adjust your filters."
@@ -326,6 +330,44 @@ func (a *App) recipeSave(w http.ResponseWriter, r *http.Request) {
 	}
 	a.cookbookRedirect(w, r, recipePath(id)+"?saved=1")
 }
+func (a *App) recipeDelete(w http.ResponseWriter, r *http.Request) {
+	id, err := recipeID(r)
+	if err != nil || id == 0 {
+		a.fail(w, ErrMissing)
+		return
+	}
+	version, _ := strconv.Atoi(r.Form.Get("version"))
+	err = a.store.DeleteRecipe(id, version)
+	if errors.Is(err, ErrRecipeChanged) {
+		p := a.cookbookPage(w, r, "editor")
+		p.Title = "Edit recipe"
+		p.Error = "This recipe changed in another browser. Review it before deleting."
+		p.Recipe, err = a.store.Recipe(id)
+		if err != nil {
+			a.fail(w, err)
+			return
+		}
+		p.Recipe.Photo = nil
+		p.RecipeImage = recipePath(id) + "/photo?v=" + itoa(p.Recipe.Version)
+		if r.Header.Get("HX-Request") == "true" {
+			w.Header().Set("HX-Push-Url", recipePath(id)+"/edit?back="+url.QueryEscape(p.RecipeReturn))
+			a.render(w, "fragment", p)
+		} else {
+			a.render(w, "page", p)
+		}
+		return
+	}
+	if err != nil {
+		a.fail(w, err)
+		return
+	}
+	target, _ := url.Parse(cookbookReturn(r.Form.Get("back")))
+	q := target.Query()
+	q.Set("deleted", "1")
+	target.RawQuery = q.Encode()
+	a.cookbookRedirect(w, r, target.String())
+}
+
 func (a *App) recipeDetailPage(w http.ResponseWriter, r *http.Request, mode string) {
 	p := a.cookbookPage(w, r, mode)
 	id, err := recipeID(r)

@@ -3,6 +3,7 @@ package dashboard
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"image"
 	imgcolor "image/color"
 	"image/png"
@@ -296,5 +297,163 @@ func TestMealDBNormalizationCacheAndSavedIdentity(t *testing.T) {
 	again, e := s.SaveRecipe(r)
 	if e != nil || id != again {
 		t.Fatal("provider save duplicated recipe", e)
+	}
+}
+
+func TestDeleteRecipeAtomicAndScoped(t *testing.T) {
+	s, _ := testStore(t)
+	recipe := testRecipe()
+	recipe.ProviderRef = "mealdb:delete-test"
+	recipe.Photo = []byte("recipe photo")
+	id, err := s.SaveRecipe(recipe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	other, err := s.SaveRecipe(testRecipe())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, rid := range []int64{id, other} {
+		token := strings.Repeat(string(rune('a'+i)), 48)
+		if _, err := s.AddRecipeShopping(rid, 1, token, []RecipeShoppingItem{{Index: 0, Name: "rice", Quantity: "2 cups"}}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	count := func(table, where string, args ...any) int {
+		t.Helper()
+		var n int
+		if err := s.db.QueryRow("SELECT COUNT(*) FROM "+table+" WHERE "+where, args...).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	shoppingBefore := count("entries", "kind='shopping'")
+	if err := s.DeleteRecipe(id, 0); !errors.Is(err, ErrRecipeChanged) {
+		t.Fatal("missing version accepted", err)
+	}
+	changed, _ := s.Recipe(id)
+	changed.Notes = "New notes"
+	if _, err := s.SaveRecipe(changed); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteRecipe(id, 1); !errors.Is(err, ErrRecipeChanged) {
+		t.Fatal("stale delete accepted", err)
+	}
+	if count("recipe_shopping_batches", "recipe_id=?", id) != 1 {
+		t.Fatal("stale delete removed transfer record")
+	}
+	// A failure after removing the receipts must roll the entire operation back.
+	if _, err := s.db.Exec("CREATE TRIGGER block_recipe_delete BEFORE DELETE ON recipes BEGIN SELECT RAISE(ABORT, 'test failure'); END"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteRecipe(id, 2); err == nil {
+		t.Fatal("expected delete failure")
+	}
+	if count("recipes", "id=?", id) != 1 || count("recipe_shopping_batches", "recipe_id=?", id) != 1 {
+		t.Fatal("failed delete partially committed")
+	}
+	if _, err := s.db.Exec("DROP TRIGGER block_recipe_delete"); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RecipeAction(id, "active", false); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteRecipe(id, 2); err != nil {
+		t.Fatal("archived recipe delete failed", err)
+	}
+	if _, err := s.Recipe(id); !errors.Is(err, ErrMissing) {
+		t.Fatal("recipe remains", err)
+	}
+	if count("recipe_shopping_batches", "recipe_id=?", id) != 0 {
+		t.Fatal("transfer record remains")
+	}
+	if count("recipes", "id=?", other) != 1 || count("recipe_shopping_batches", "recipe_id=?", other) != 1 {
+		t.Fatal("another recipe was affected")
+	}
+	if count("entries", "kind='shopping'") != shoppingBefore {
+		t.Fatal("shopping items were removed")
+	}
+	if err := s.DeleteRecipe(id, 2); !errors.Is(err, ErrMissing) {
+		t.Fatal("missing recipe delete", err)
+	}
+	replacement, err := s.SaveRecipe(recipe)
+	if err != nil || replacement == id {
+		t.Fatal("deleted import could not be replaced", replacement, err)
+	}
+}
+
+func TestRecipeDeleteHTTP(t *testing.T) {
+	s, _ := testStore(t)
+	id, err := s.SaveRecipe(testRecipe())
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := New(s, time.UTC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(method, path string, values url.Values, cookie *http.Cookie, hx bool) *httptest.ResponseRecorder {
+		t.Helper()
+		r := httptest.NewRequest(method, "http://household.test"+path, strings.NewReader(values.Encode()))
+		if method == "POST" {
+			r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
+		if hx {
+			r.Header.Set("HX-Request", "true")
+		}
+		if cookie != nil {
+			r.AddCookie(cookie)
+		}
+		w := httptest.NewRecorder()
+		a.ServeHTTP(w, r)
+		return w
+	}
+	base := recipePath(id)
+	edit := request("GET", base+"/edit", nil, nil, false)
+	cookie := edit.Result().Cookies()[0]
+	if edit.Code != 200 || !strings.Contains(edit.Body.String(), `id="recipe-delete"`) || !strings.Contains(edit.Body.String(), "This cannot be undone.") {
+		t.Fatal("delete not in existing editor", edit.Code)
+	}
+	if body := request("GET", "/cookbook/new", nil, cookie, false).Body.String(); strings.Contains(body, "Delete recipe") {
+		t.Fatal("new recipe has delete action")
+	}
+	draft, err := s.PutRecipeDraft(testRecipe(), recipeOwner(cookie.Value))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if body := request("GET", "/cookbook/drafts/"+draft+"/edit", nil, cookie, false).Body.String(); strings.Contains(body, "Delete recipe") {
+		t.Fatal("import preview has delete action")
+	}
+	if w := request("GET", base+"/delete", nil, cookie, false); w.Code != http.StatusNotFound && w.Code != http.StatusMethodNotAllowed {
+		t.Fatal("GET delete accepted", w.Code)
+	}
+	if w := request("POST", base+"/delete", url.Values{"version": {"1"}}, cookie, true); w.Code != http.StatusForbidden {
+		t.Fatal("missing CSRF accepted", w.Code)
+	}
+	stale := request("POST", base+"/delete", url.Values{"version": {"0"}, "csrf": {cookie.Value}}, cookie, true)
+	if !strings.Contains(stale.Body.String(), "Review it before deleting.") || !strings.Contains(stale.Header().Get("HX-Push-Url"), base+"/edit") {
+		t.Fatal("stale delete did not return to editor", stale.Code, stale.Header())
+	}
+	if _, err := s.Recipe(id); err != nil {
+		t.Fatal("rejected request deleted recipe", err)
+	}
+	w := request("POST", base+"/delete", url.Values{"version": {"1"}, "csrf": {cookie.Value}, "back": {"/cookbook?meal=Dinner&favorite=1"}}, cookie, true)
+	if recipeLocation(w) != "/cookbook?deleted=1&favorite=1&meal=Dinner" {
+		t.Fatal("wrong delete redirect", w.Header(), w.Body.String())
+	}
+	library := request("GET", recipeLocation(w), nil, cookie, false)
+	if library.Code != 200 || !strings.Contains(library.Body.String(), "Recipe deleted.") {
+		t.Fatal("missing delete feedback")
+	}
+	if w := request("GET", base, nil, cookie, false); w.Code != http.StatusNotFound {
+		t.Fatal("deleted recipe still available", w.Code)
+	}
+	id, err = s.SaveRecipe(testRecipe())
+	if err != nil {
+		t.Fatal(err)
+	}
+	w = request("POST", recipePath(id)+"/delete", url.Values{"version": {"1"}, "csrf": {cookie.Value}, "back": {"https://example.com/elsewhere"}}, cookie, false)
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/cookbook?deleted=1" {
+		t.Fatal("unsafe fallback", w.Code, w.Header())
 	}
 }
