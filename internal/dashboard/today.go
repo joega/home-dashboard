@@ -5,11 +5,25 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type SummaryGroup struct {
 	Name, URL string
 	Count     int
+}
+
+// Keep all-day events and timed events whose calendar duration has not ended.
+// Entries are already expanded to the household date and ordered by start time.
+func remainingTodayEvents(entries []Entry, now time.Time) []Entry {
+	minute := now.Hour()*60 + now.Minute()
+	remaining := make([]Entry, 0, len(entries))
+	for _, event := range entries {
+		if event.Start == "" || minute < endMinute(event) {
+			remaining = append(remaining, event)
+		}
+	}
+	return remaining
 }
 
 // Group only pending items; chores must also be due on this household date.

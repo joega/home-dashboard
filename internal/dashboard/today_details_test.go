@@ -12,7 +12,7 @@ func TestTodayModalsRemainReadOnlyAndReuseCachedWeather(t *testing.T) {
 	s, _ := testStore(t)
 	zone, _ := time.LoadLocation("America/New_York")
 	day := time.Now().In(zone).Format("2006-01-02")
-	for _, e := range []Entry{{Kind: "event", Title: "Today's meeting", Date: day, Start: "15:00", Location: "School"}, {Kind: "event", Title: "Future only", Date: "2099-01-01", Start: "15:00"}, {Kind: "chore", Title: "Due now", Date: day}, {Kind: "chore", Title: "Not due", Date: "2099-01-01"}, {Kind: "shopping", Title: "Milk", Quantity: "1 carton"}} {
+	for _, e := range []Entry{{Kind: "event", Title: "Today's meeting", Date: day, Start: "23:59", Location: "School"}, {Kind: "event", Title: "Future only", Date: "2099-01-01", Start: "15:00"}, {Kind: "chore", Title: "Due now", Date: day}, {Kind: "chore", Title: "Not due", Date: "2099-01-01"}, {Kind: "shopping", Title: "Milk", Quantity: "1 carton"}} {
 		if err := s.Save(e); err != nil {
 			t.Fatal(err)
 		}

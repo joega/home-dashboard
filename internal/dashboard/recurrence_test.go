@@ -139,7 +139,7 @@ func TestRecurringEventsEveryViewAndLocation(t *testing.T) {
 	if got := eventsOn(raw, "2026-10-26", loc); len(got) != 0 {
 		t.Fatal("ended series continued")
 	}
-	p := Page{Now: time.Date(2026, 10, 14, 11, 0, 0, 0, loc), Today: "2026-10-14", View: "today"}
+	p := Page{Now: time.Date(2026, 10, 14, 8, 30, 0, 0, loc), Today: "2026-10-14", View: "today"}
 	if err := a.load(&p, nil); err != nil || len(p.Events) != 1 {
 		t.Fatal("Today did not show recurring event", err)
 	}

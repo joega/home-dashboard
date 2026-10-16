@@ -81,8 +81,8 @@ func TestTodayCalendarSummaryIsReadOnly(t *testing.T) {
 	now := time.Now().In(loc)
 	day := now.Format("2006-01-02")
 	for _, e := range []Entry{
-		{Kind: "event", Title: "Today appointment", Date: day, Start: "09:00"},
-		{Kind: "event", Title: "Daily pickup", Date: now.AddDate(0, 0, -1).Format("2006-01-02"), Start: "15:00", Repeat: "daily", RepeatEvery: 1},
+		{Kind: "event", Title: "Today appointment", Date: day, Start: "23:59"},
+		{Kind: "event", Title: "Daily pickup", Date: now.AddDate(0, 0, -1).Format("2006-01-02"), Start: "23:59", Repeat: "daily", RepeatEvery: 1},
 		{Kind: "event", Title: "Future appointment", Date: now.AddDate(0, 0, 1).Format("2006-01-02"), Start: "09:00"},
 	} {
 		if e := s.Save(e); e != nil {
@@ -106,5 +106,127 @@ func TestTodayCalendarSummaryIsReadOnly(t *testing.T) {
 	a.ServeHTTP(w, httptest.NewRequest("GET", "http://household.test/calendar?mode=day&date="+day, nil))
 	if w.Code != 200 || !strings.Contains(w.Body.String(), "Today appointment") || !strings.Contains(w.Body.String(), "Daily pickup") {
 		t.Fatal("calendar drilldown lost today's events")
+	}
+}
+
+func TestRemainingTodayEventsUsesEndTime(t *testing.T) {
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatal(err)
+	}
+	entries := []Entry{
+		{ID: 1, Start: "07:50", End: "08:10"},
+		{ID: 2, Start: "09:30"}, // The calendar gives events without an end one hour.
+		{ID: 3, Start: "10:00", End: "11:00"},
+		{ID: 4, Start: "23:30"},
+		{ID: 5}, // All-day events remain visible.
+	}
+	for _, tc := range []struct{ at, want string }{
+		{"07:49:00", "1,2,3,4,5"},
+		{"08:09:59", "1,2,3,4,5"},
+		{"08:10:00", "2,3,4,5"},
+		{"10:29:59", "2,3,4,5"},
+		{"10:30:00", "3,4,5"},
+		{"10:59:59", "3,4,5"},
+		{"11:00:00", "4,5"},
+		{"23:59:59", "4,5"},
+	} {
+		t.Run(tc.at, func(t *testing.T) {
+			now, err := time.ParseInLocation("2006-01-02 15:04:05", "2026-10-16 "+tc.at, loc)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var ids []string
+			for _, e := range remainingTodayEvents(entries, now) {
+				ids = append(ids, strconv.FormatInt(e.ID, 10))
+			}
+			if got := strings.Join(ids, ","); got != tc.want {
+				t.Fatalf("remaining = %s, want %s", got, tc.want)
+			}
+		})
+	}
+	if len(entries) != 5 || entries[0].ID != 1 {
+		t.Fatal("filter mutated original calendar entries")
+	}
+}
+
+func TestTodayExpiredEventsCountHighlightAndCalendarHistory(t *testing.T) {
+	s, _ := testStore(t)
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range []Entry{
+		{Kind: "event", Title: "School Dropoff", Date: "2026-10-15", Start: "07:50", End: "08:10", Repeat: "daily", RepeatEvery: 1},
+		{Kind: "event", Title: "School Pickup", Date: "2026-10-16", Start: "14:35", End: "14:50"},
+		{Kind: "event", Title: "Karate", Date: "2026-10-16", Start: "16:00", End: "17:00"},
+		{Kind: "event", Title: "Bring Bike Inside", Date: "2026-10-16", Start: "18:30"},
+		{Kind: "event", Title: "Tomorrow Only", Date: "2026-10-17", Start: "07:00"},
+	} {
+		if err := s.Save(e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a, err := New(s, loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		at, first string
+		count     int
+	}{
+		{"08:00", "School Dropoff", 4},
+		{"08:10", "School Pickup", 3},
+		{"10:59", "School Pickup", 3},
+		{"14:40", "School Pickup", 3},
+		{"14:50", "Karate", 2},
+		{"17:00", "Bring Bike Inside", 1},
+		{"19:30", "", 0},
+	} {
+		t.Run(tc.at, func(t *testing.T) {
+			local, err := time.ParseInLocation("2006-01-02 15:04", "2026-10-16 "+tc.at, loc)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// The clock can arrive in UTC; filtering must use the household zone.
+			p := Page{Now: local.UTC(), Today: "2026-10-16", Zone: loc.String(), View: "today"}
+			if err := a.load(&p, nil); err != nil {
+				t.Fatal(err)
+			}
+			if len(p.Events) != tc.count {
+				t.Fatalf("got %d events, want %d", len(p.Events), tc.count)
+			}
+			w := httptest.NewRecorder()
+			a.render(w, "today", p)
+			body := w.Body.String()
+			count := strconv.Itoa(tc.count) + " "
+			if !strings.Contains(body, count+"event") || strings.Contains(body, "Tomorrow Only") {
+				t.Fatal("incorrect count or date")
+			}
+			if tc.count == 0 {
+				if !strings.Contains(body, "No more events today.") || strings.Contains(body, "event-summary") {
+					t.Fatal("incorrect empty state")
+				}
+				return
+			}
+			if p.Events[0].Title != tc.first {
+				t.Fatal("wrong highlighted event", p.Events[0].Title)
+			}
+			featured := strings.Index(body, `class="event-row event-summary featured"`)
+			if featured < 0 || !strings.Contains(strings.SplitN(body[featured:], "</a>", 2)[0], tc.first) {
+				t.Fatal("first remaining event not highlighted")
+			}
+			if tc.first != "School Dropoff" && strings.Contains(body, "School Dropoff") {
+				t.Fatal("ended event remains visible")
+			}
+		})
+	}
+	// Past events stay in the full calendar, including today's recurring occurrence.
+	p := Page{Now: time.Date(2026, 10, 16, 19, 30, 0, 0, loc), Today: "2026-10-16", View: "calendar"}
+	if err := a.load(&p, nil); err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Lanes) != 1 || len(p.Lanes[0].Events) != 4 || p.Lanes[0].Events[0].Title != "School Dropoff" {
+		t.Fatal("calendar lost event history")
 	}
 }

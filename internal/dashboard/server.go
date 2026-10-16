@@ -444,7 +444,7 @@ func (a *App) load(p *Page, q url.Values) error {
 	case "today":
 		p.Title = "Today"
 		p.Subtitle = p.Now.Format("Monday, January 2")
-		p.Events = eventsOn(p.Events, p.Today, a.loc)
+		p.Events = remainingTodayEvents(eventsOn(p.Events, p.Today, a.loc), p.Now.In(a.loc))
 		var dueChores []Entry
 		for _, e := range p.Chores {
 			if e.Due && !e.Done {
