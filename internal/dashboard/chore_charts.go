@@ -106,12 +106,12 @@ func (a *App) loadChoreCharts(p *Page, q url.Values) error {
 		date = today
 	}
 	c.Date = date.Format(time.DateOnly)
-	c.Choices = p.People
+	c.Choices = chorePeople(p.People)
 	validPerson := c.Person == "" || c.Person == "household"
 	if c.Person == "household" {
 		c.Scope = "Household (unclaimed)"
 	}
-	for _, person := range p.People {
+	for _, person := range c.Choices {
 		if c.Person == strconv.FormatInt(person.ID, 10) {
 			validPerson = true
 			c.Scope = person.Name
@@ -177,7 +177,14 @@ func (a *App) loadChoreCharts(p *Page, q url.Values) error {
 	totals := map[int64]int{}
 	days := map[int64][]time.Time{}
 	buckets := map[string]int{}
+	eligible := map[int64]bool{0: true}
+	for _, person := range c.Choices {
+		eligible[person.ID] = true
+	}
 	for _, d := range counts {
+		if !eligible[d.PersonID] {
+			continue
+		}
 		day, _ := time.ParseInLocation(time.DateOnly, d.Day, a.loc)
 		key := strconv.FormatInt(d.PersonID, 10)
 		if d.PersonID == 0 {
@@ -199,7 +206,7 @@ func (a *App) loadChoreCharts(p *Page, q url.Values) error {
 			buckets[bucket] += d.Count
 		}
 	}
-	for _, person := range p.People {
+	for _, person := range c.Choices {
 		key := strconv.FormatInt(person.ID, 10)
 		if c.Person != "" && c.Person != key {
 			continue

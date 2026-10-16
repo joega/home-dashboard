@@ -11,7 +11,7 @@ import (
 func TestPendingGroupsCountsAndStableLinks(t *testing.T) {
 	chores := []Entry{{Due: true, Owner: "Anyone"}, {Due: true, Owner: "Household"}, {Due: true, PersonID: 7, Owner: "Zoe"}, {Due: true, PersonID: 8, Owner: "Alex"}, {Due: true, Done: true, PersonID: 7, Owner: "Zoe"}, {Due: false, PersonID: 8, Owner: "Alex"}}
 	groups, total := pendingGroups(chores, true)
-	if total != 4 || len(groups) != 3 || groups[0].Name != "Anyone" || groups[0].Count != 2 || groups[0].URL != "/chores?person=none" || groups[1].Name != "Alex" || groups[1].URL != "/chores?person=8" {
+	if total != 4 || len(groups) != 3 || groups[0].Name != "Household" || groups[0].Count != 2 || groups[0].URL != "/chores?person=none" || groups[1].Name != "Alex" || groups[1].URL != "/chores?person=8" {
 		t.Fatal(groups, total)
 	}
 	shopping := []Entry{{Quantity: "10"}, {ShopID: 4, ShopName: "A & B"}, {ShopID: 4, ShopName: "A & B", Done: true}, {ShopID: 4, ShopName: "A & B"}}
@@ -50,7 +50,7 @@ func TestTodayDrilldownAndChorePersonFilter(t *testing.T) {
 		return w.Body.String()
 	}
 	body := get("/")
-	if !strings.Contains(body, "Alex: 1 pending chore") || !strings.Contains(body, "Anyone: 1 pending chore") || !strings.Contains(body, "Any store: 1 shopping item needed") || strings.Contains(body, "Complete Alex task") {
+	if !strings.Contains(body, "Alex: 1 pending chore") || !strings.Contains(body, "Household: 1 pending chore") || !strings.Contains(body, "Any store: 1 shopping item needed") || strings.Contains(body, "Complete Alex task") {
 		t.Fatal("incorrect overview", body)
 	}
 	body = get("/chores?person=" + strconv.FormatInt(id, 10))

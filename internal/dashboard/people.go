@@ -24,6 +24,7 @@ type Person struct {
 	ID               int64
 	Name             string
 	Active, HasPhoto bool
+	ChoreEligible    bool
 	Photo            []byte
 	Chores           int
 }
@@ -112,7 +113,7 @@ func (s *Store) migratePeople() error {
 	return tx.Commit()
 }
 func (s *Store) People() ([]Person, error) {
-	rows, err := s.db.Query(`SELECT id,name,active,COALESCE(length(photo),0)>0,(SELECT count(*) FROM entries WHERE kind='chore' AND entries.person_id=people.id) FROM people ORDER BY active DESC,name COLLATE NOCASE,id`)
+	rows, err := s.db.Query(`SELECT id,name,active,chore_eligible,COALESCE(length(photo),0)>0,(SELECT count(*) FROM entries WHERE kind='chore' AND entries.person_id=people.id) FROM people ORDER BY active DESC,name COLLATE NOCASE,id`)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +121,7 @@ func (s *Store) People() ([]Person, error) {
 	var people []Person
 	for rows.Next() {
 		var p Person
-		if err = rows.Scan(&p.ID, &p.Name, &p.Active, &p.HasPhoto, &p.Chores); err != nil {
+		if err = rows.Scan(&p.ID, &p.Name, &p.Active, &p.ChoreEligible, &p.HasPhoto, &p.Chores); err != nil {
 			return nil, err
 		}
 		people = append(people, p)
@@ -129,7 +130,7 @@ func (s *Store) People() ([]Person, error) {
 }
 func (s *Store) Person(id int64) (Person, error) {
 	var p Person
-	err := s.db.QueryRow("SELECT id,name,active,COALESCE(length(photo),0)>0,photo FROM people WHERE id=?", id).Scan(&p.ID, &p.Name, &p.Active, &p.HasPhoto, &p.Photo)
+	err := s.db.QueryRow("SELECT id,name,active,chore_eligible,COALESCE(length(photo),0)>0,photo FROM people WHERE id=?", id).Scan(&p.ID, &p.Name, &p.Active, &p.ChoreEligible, &p.HasPhoto, &p.Photo)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = ErrMissing
 	}
@@ -332,6 +333,9 @@ func (a *App) assignment(e *Entry, r *http.Request) error {
 	person, err := a.store.Person(id)
 	if err != nil {
 		return errors.New("That person is no longer available. Choose someone else.")
+	}
+	if e.Kind == "chore" && !person.ChoreEligible {
+		return errors.New("That person is not enabled for chores. Choose an eligible person or Household.")
 	}
 	if !person.Active {
 		old, err := a.store.Get(e.ID, time.Now().In(a.loc).Format("2006-01-02"))

@@ -44,6 +44,9 @@ func TestPeopleMigrationAndRenameKeepsAssignment(t *testing.T) {
 		t.Fatalf("migration: %v %#v", err, people)
 	}
 	person := people[0]
+	if !person.ChoreEligible {
+		t.Fatal("upgrading existing people must preserve chore eligibility")
+	}
 	chore, _ := s.Get(1, "2026-10-13")
 	event, _ := s.Get(2, "2026-10-13")
 	if chore.PersonID != person.ID || event.PersonID != person.ID {

@@ -471,3 +471,5 @@ body[data-theme=dark] .chore-chart-person{background:rgba(210,224,232,.025)}body
 @media(max-width:700px){.chore-chart-trend:not([data-period=day]) .chart-period-caption{display:none}.chore-chart-trend:not([data-period=day]) .chart-swipe-hint{display:inline}}
 
 body[data-theme=dark] .chore-charts{--chart-green:#9ec9b5}
+
+.chore-settings{max-width:720px}.chore-roster{border:0;padding:0;margin:0 0 24px}.chore-settings .chore-roster-row{display:flex;flex-direction:row;align-items:center;gap:16px;min-height:76px;padding:12px 0;margin:0;border-bottom:1px solid var(--line);cursor:pointer}.chore-roster-row input[type=checkbox]{width:26px;height:26px;accent-color:var(--accent);flex-shrink:0}.chore-roster-row .avatar{width:48px;height:48px;flex-shrink:0}.chore-roster-row>span:last-child{overflow-wrap:anywhere}

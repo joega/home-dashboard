@@ -60,7 +60,7 @@ func (a *App) todaySummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if kind == "chores" {
-		filter := chorePersonFilter(r.URL.Query().Get("person"), p.People)
+		filter := chorePersonFilter(r.URL.Query().Get("person"), p.ChorePeople)
 		p.SummaryTitle, p.SummaryURL = "Today's chores", choreURL(filter, "", false)
 		for _, e := range p.Chores {
 			if matchesChorePerson(e, filter) {

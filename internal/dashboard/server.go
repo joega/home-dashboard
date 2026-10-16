@@ -86,6 +86,7 @@ type Page struct {
 	HasArchivedShops                                                                                 bool
 	AllSchedules                                                                                     bool
 	People                                                                                           []Person
+	ChorePeople                                                                                      []Person
 	Person                                                                                           Person
 	HasArchived                                                                                      bool
 	CalendarMode, CalDate, CalTitle, PrevURL, NextURL, TodayURL, DayURL, ThreeURL, WeekURL, MonthURL string
@@ -229,6 +230,7 @@ func New(store *Store, loc *time.Location, providers ...weather.Provider) (*App,
 	mux.HandleFunc("POST /entries/{id}/delete", a.delete)
 	mux.HandleFunc("POST /shopping/clear", a.clearShopping)
 	mux.HandleFunc("POST /reset-demo", a.resetDemo)
+	mux.HandleFunc("POST /settings/chores", a.saveChoreSettings)
 	mux.HandleFunc("POST /settings/weather", a.saveWeather)
 	mux.HandleFunc("POST /settings/sports", a.saveSportsSettings)
 	mux.HandleFunc("GET /sports/logos/{team}", a.sportsLogo)
@@ -383,6 +385,7 @@ func (a *App) load(p *Page, q url.Values) error {
 	if err != nil {
 		return err
 	}
+	p.ChorePeople = chorePeople(p.People)
 	for _, person := range p.People {
 		if !person.Active {
 			p.HasArchived = true
@@ -405,6 +408,7 @@ func (a *App) load(p *Page, q url.Values) error {
 	if err != nil {
 		return err
 	}
+	p.Chores = householdChoreAssignments(p.Chores, p.People)
 	p.Shopping, err = a.store.List("shopping", p.Today)
 	if err != nil {
 		return err
@@ -436,8 +440,11 @@ func (a *App) load(p *Page, q url.Values) error {
 		p.Title = "Media"
 	case "settings":
 		p.SettingsSection = q.Get("section")
-		if p.SettingsSection != "stores" && p.SettingsSection != "weather" && p.SettingsSection != "display" && p.SettingsSection != "sports" && p.SettingsSection != "media" {
+		if p.SettingsSection != "chores" && p.SettingsSection != "stores" && p.SettingsSection != "weather" && p.SettingsSection != "display" && p.SettingsSection != "sports" && p.SettingsSection != "media" {
 			p.SettingsSection = "people"
+		}
+		if p.SettingsSection == "chores" && q.Get("saved") == "1" {
+			p.Notice = "Chores settings saved."
 		}
 		p.Title = "Settings"
 		p.Subtitle = "Your household."
@@ -470,7 +477,7 @@ func (a *App) load(p *Page, q url.Values) error {
 		if err := a.loadEmbeddedChoreCharts(p, q); err != nil {
 			return err
 		}
-		p.PersonFilter = chorePersonFilter(q.Get("person"), p.People)
+		p.PersonFilter = chorePersonFilter(q.Get("person"), p.ChorePeople)
 		p.Title = "Chores"
 		p.Subtitle = "A little teamwork, every day."
 		p.AllSchedules = q.Get("schedules") == "all"
@@ -546,7 +553,7 @@ func (a *App) form(w http.ResponseWriter, r *http.Request) {
 	if kind == "event" {
 		p.Entry.Owner = "Household"
 	}
-	if p.CurrentPerson.ID > 0 && kind != "shopping" {
+	if p.CurrentPerson.ID > 0 && kind != "shopping" && (kind != "chore" || p.CurrentPerson.ChoreEligible) {
 		p.Entry.PersonID = p.CurrentPerson.ID
 		p.Entry.Owner = p.CurrentPerson.Name
 	}
@@ -586,6 +593,9 @@ func (a *App) form(w http.ResponseWriter, r *http.Request) {
 				p.Entry.ShopID = id
 			}
 		}
+	}
+	if kind == "chore" {
+		p.Entry = householdChoreAssignments([]Entry{p.Entry}, p.People)[0]
 	}
 	p.Entry = normalizeSchedule(p.Entry)
 	if kind == "chore" && p.Entry.Date == "" && p.Entry.Repeat != "" {

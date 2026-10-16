@@ -46,7 +46,7 @@ func pendingGroups(entries []Entry, chores bool) ([]SummaryGroup, int) {
 		}
 		if id == 0 {
 			if chores {
-				name = "Anyone"
+				name = "Household"
 			} else {
 				name = "Any store"
 			}

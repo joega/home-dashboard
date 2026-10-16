@@ -54,6 +54,10 @@ func Open(path string, demo bool, today string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
+	if err := s.migrateChoreSettings(); err != nil {
+		db.Close()
+		return nil, err
+	}
 	if err := s.migrateProfiles(); err != nil {
 		db.Close()
 		return nil, err
@@ -270,6 +274,20 @@ func (s *Store) setDoneAs(id int64, day string, done bool, at time.Time, actor *
 			return e
 		}
 		actor = &checked
+	}
+	// An excluded profile participates as Household, without claiming personal chore stars.
+	if kind == "chore" {
+		if actor != nil && actor.ID > 0 && !actor.ChoreEligible {
+			actor = &Person{}
+		} else if actor == nil && personID.Valid {
+			var eligible bool
+			if err := tx.QueryRow("SELECT chore_eligible FROM people WHERE id=?", personID.Int64).Scan(&eligible); err != nil {
+				return err
+			}
+			if !eligible {
+				actor = &Person{}
+			}
+		}
 	}
 	stamp := at.UTC().Format(time.RFC3339Nano)
 	if done && !wasDone {

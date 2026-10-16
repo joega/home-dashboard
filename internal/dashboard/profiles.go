@@ -81,7 +81,7 @@ func actorInTransaction(tx *sql.Tx, actor Person) (Person, error) {
 	if actor.ID < 0 {
 		return Person{}, errors.New("Choose an active person")
 	}
-	if e := tx.QueryRow("SELECT name,active FROM people WHERE id=?", actor.ID).Scan(&actor.Name, &active); e != nil || !active {
+	if e := tx.QueryRow("SELECT name,active,chore_eligible FROM people WHERE id=?", actor.ID).Scan(&actor.Name, &active, &actor.ChoreEligible); e != nil || !active {
 		return Person{}, errors.New("Choose an active person")
 	}
 	return actor, nil
